@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<p style="font-size: 25px;">Informacje podstawowe</p>
+<table>
+    <tr>
+        <th>Nazwa turnieju:</th>
+        <td>{{ tournament.name }}</td>
+    </tr>
+
+    <tr>
+        <th>Data rozpoczęcia:</th>
+        <td>{{ tournament.start }}</td>
+    </tr>
+
+    <tr>
+        <th>Data zakończenia:</th>
+        <td>{{ tournament.end }}</td>
+    </tr>
+
+    <tr>
+        <th>Miejsce:</th>
+        <td>{{ tournament.address.city }}, ul. {{ tournament.address.street }} {{ tournament.address.house_number }}</td>
+    </tr>
+
+    <tr>
+        <th>Tempo gry:</th>
+        <td>{{ tournament.game_rate }}</td>
+    </tr>
+
+    <tr>
+        <th>Sędzia:</th>
+        <td>{{ tournament.id_judge }}</td>
+    </tr>
+
+    <tr>
+        <th>Organizator:</th>
+        <td>{{ tournament.organizer }}</td>
+    </tr>
+
+    <tr>
+        <th>Zakończonych rund:</th>
+        <td></td>
+    </tr>
+
+    <tr>
+        <th>Liczba rund:</th>
+        <td></td>
+    </tr>
+
+    <tr>
+        <th>System rozgrywek:</th>
+        <td>{{ tournament.game_system }}</td>
+    </tr>
+</table>
+
+<h1>Lista startowa</h1>
+
+{% for member in members %}
+    {{ member.id_person }}
+{% endfor %}
+
+{% endblock content %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+	<form method="POST">
+		<h2>Usuń turniej</h2>
+		{% csrf_token %}
+		<strong>Czy jesteś pewnien?</strong>
+		<br><br>
+		<button type="sumbit">Usuń</button>
+	</form>
+{% endblock content %}

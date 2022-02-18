@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="text-center alert alert-{{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="True">&times;</span>
+            </button>
+             {{ message|safe }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="inner">
+    <form action="/tournaments/create/" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button">Dodaj turniej</button>
+    </form>
+</div>
+
+{% if queryset %}
+siema
+{% endif %}
+{% if object_list %}
+    <table id="tournaments">
+        <tr>
+            <th colspan="4">.Miesiąc, Rok.</th>
+        </tr>
+        {% for tournament in object_list %}
+            <tr>
+                <td style="padding-bottom: 0px;">
+                    <p style="color: {{ tournament.status }}; line-height: 0.5;">{{ tournament.start }}</p>
+                    <p style="color: {{ tournament.status }}; line-height: 0.5; font-size: 12px;">{{ tournament.end }}</p>
+                </td>
+                <td>
+                    <a href="/tournaments/{{ tournament.id }}/">{{ tournament.name }}</a> <br>
+                    {{ tournament.address.city }}
+                </td>
+                <td>{{ tournament.address.country }}, {{ tournament.address.province }}</td>
+                <td>
+                    <small><a href="{% url 'update_tournament' tournament.id %}">Update</a></small>
+                    <small><a href="{% url 'delete_tournament' tournament.id %}">Delete</a></small>
+                    <small><a href="{% url 'join_tournament' %}">Dołącz</a></small>
+                    {% for tp in tournament_participant %}
+                        {% if tournament.name == tp.tournament_id.name %}
+<!--                            leave tournament-->
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% endblock %}

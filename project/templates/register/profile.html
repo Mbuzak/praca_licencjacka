@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h1>Profil użytkownika</h1>
+<p>ID: {{ user.id }}</p>
+<p>Imię: {{ user.name }}</p>
+<p>Nazwisko: {{ user.lastname }}</p>
+<p>Email: {{ user.email }}</p>
+<p>Płeć: {{ user.gender }}</p>
+<p>Rok urodzenia: {{ user.born_year }}</p>
+
+<h1>Lista turnieji użytkownika</h1>
+
+{% for tournament in user_tournaments %}
+    {{ tournament.id_person }}
+    {{ tournament.id_tournament }}
+{% endfor %}
+
+{% endblock content %}
