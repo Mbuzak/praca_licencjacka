@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+	<form method="POST">
+		<p style="font-size: 22px;">
+		    Czy jesteś pewnien że chcesz usunąć {{ club }}? <br>
+			Wszystkie dane klubu zostaną usunięte
+		</p>
+		{% csrf_token %}
+		<button type="sumbit" class="button" id="red-button">Usuń</button>
+	</form>
+{% endblock content %}
