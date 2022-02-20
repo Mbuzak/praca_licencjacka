@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="text-center alert alert-{{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="True">&times;</span>
+            </button>
+             {{ message|safe }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="inner">
+    <form action="{% url 'create_club' %}" method="get">
+        {% csrf_token %}
+        <button type="submit" class="button" id="green-button">Dodaj klub</button>
+    </form>
+</div>
+
+{% if object_list %}
+    <table id="tournaments">
+        <tr>
+            <th>Nazwa</th>
+            <th>Kontakt</th>
+            <th>Województwo</th>
+            <th>Miasto</th>
+            <th>Menadżer</th>
+        </tr>
+        {% for club in object_list %}
+            <tr>
+                <td><a href="/clubs/{{ club.id }}/">{{ club.name }}</a></td>
+                <td>{{ club.email }}</td>
+                <td>{{ club.address.province }}</td>
+                <td>{{ club.address.city }}</td>
+                <td>{{ club.id_manager }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% endblock content %}
