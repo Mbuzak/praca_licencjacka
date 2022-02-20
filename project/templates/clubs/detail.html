@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{% if members %}
+{% else %}
+    <form method="get" action="{% url 'join_club' %}">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button class="button" id="green-button" type="sumbit">Dołącz</button>
+    </form>
+{% endif %}
+
+
+{% for member in members %}
+    {% if member.id_person == user.id %}
+        <form method="get" action="{% url 'join_club' %}">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button class="button" id="green-button" type="sumbit">Dołącz</button>
+        </form>
+    {% endif %}
+{% endfor %}
+
+
+{% for tp in members %}
+    {% if tournament.id == tp.id_tournament.id %}
+        <form method="post" action="{% url 'leave_club' tp.id %}">
+           {% csrf_token %}
+            <button class="button" id="red-button" type="sumbit">Opuść</button>
+        </form>
+    {% endif %}
+{% endfor %}
+
+
+<h1>Informacje podstawowe</h1>
+<p>Nazwa: {{ club.name }} <br>
+Kontakt: {{ club.email }} <br>
+Adres: {{ club.address.province }}, {{ club.address.city }}, {{ club.address.street }}, {{ club.address.house_number }} <br>
+Menadżer: {{ club.id_manager }} <br>
+</p>
+
+<h1>Członkowie klubu</h1>
+{% for member in members %}
+    {{ member.id_person }}
+{% endfor %}
+
+
+<div class="inner">
+    <form action="{% url 'update_club' club.id %}" method="get">
+        {% csrf_token %}
+        <button type="submit" class="button" id="blue-button">Aktualizuj klub</button>
+    </form>
+</div>
+
+<div class="inner">
+    <form action="{% url 'delete_club' club.id %}" method="get">
+        {% csrf_token %}
+        <button type="submit" class="button" id="red-button">Usuń klub</button>
+    </form>
+</div>
+
+{% endblock content %}
