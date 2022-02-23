@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    {% if not has_application and tournament.judge.id != user.id and not is_member %}
+        <form method="get" action="{% url 'create_tournament_application' tournament.id %}">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button class="button" id="green-button" type="sumbit">Dodaj zgłoszenie</button>
+        </form>
+    {% endif %}
+
+    <table>
+        <tr>
+            <th>Imię Nazwisko</th>
+            <th>Kraj</th>
+            <th>Opcje</th>
+        </tr>
+        {% if applications %}
+            {% for application in applications %}
+                <tr>
+                    <td>{{ application.person }}</td>
+                    <td>{{ application.person.country }}</td>
+                    {% if tournament.judge.id == user.id %}
+                        <td><a href="{% url 'create_tournament_member' application_id=application.id %}">Dodaj</td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_tournament_application' application.id %}">
+                                {% csrf_token %}
+                                <button type="sumbit" class="button" id="red-button">Usuń</button>
+                            </form>
+                        </td>
+                    {% else %}
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        {% endif %}
+    </table>
+{% endblock content %}

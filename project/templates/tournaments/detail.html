@@ -2,6 +2,17 @@
 
 
 {% block content %}
+<a href="/tournaments/{{ tournament.id }}/application">Zgłoszenia do turnieju</a> <br>
+
+{% if is_member %}
+    {% for i in is_member %}
+        <form method="post" action="{% url 'leave_tournament' i.id %}">
+           {% csrf_token %}
+            <button class="button" id="red-button" type="sumbit">Opuść</button>
+        </form>
+    {% endfor %}
+{% endif %}
+
 <p style="font-size: 25px;">Informacje podstawowe</p>
 <table>
     <tr>
@@ -11,12 +22,12 @@
 
     <tr>
         <th>Data rozpoczęcia:</th>
-        <td>{{ tournament.start }}</td>
+        <td>{{ tournament.start|date:"d-m-Y" }}</td>
     </tr>
 
     <tr>
         <th>Data zakończenia:</th>
-        <td>{{ tournament.end }}</td>
+        <td>{{ tournament.end|date:"d-m-Y" }}</td>
     </tr>
 
     <tr>
@@ -31,7 +42,7 @@
 
     <tr>
         <th>Sędzia:</th>
-        <td>{{ tournament.id_judge }}</td>
+        <td>{{ tournament.judge }}</td>
     </tr>
 
     <tr>
@@ -57,8 +68,55 @@
 
 <h1>Lista startowa</h1>
 
+
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>Nr FIDE</th>
+        <th>Id-cr</th>
+        <th>Tytuł</th>
+        <th>Imię Nazwisko</th>
+        <th>Państwo</th>
+        <th>FIDE</th>
+        <th>Ranking</th>
+        <th>Klub</th>
+        <th>Data ur.</th>
+
+    </tr>
 {% for member in members %}
-    {{ member.id_person }}
+    <tr>
+        <td></td>
+        <td></td>
+        <td>{{ member.person.id }}</td>
+        <td>
+            {% for i in ratings %}
+                {% if i.person == member.person.id %}
+                    {{ i.name__min }}
+                {% endif %}
+            {% endfor %}
+        </td>
+        <td>{{ member.person }}</td>
+        <td>{{ member.person.country }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>{{ member.person.born_year }}</td>
+    </tr>
 {% endfor %}
+</table>
+
+<div class="inner">
+    <form action="{% url 'update_tournament' tournament.id %}" method="get">
+        {% csrf_token %}
+        <button type="submit" class="button" id="blue-button">Aktualizuj turniej</button>
+    </form>
+</div>
+
+<div class="inner">
+    <form action="{% url 'delete_tournament' tournament.id %}" method="get">
+        {% csrf_token %}
+        <button type="submit" class="button" id="red-button">Usuń turniej</button>
+    </form>
+</div>
 
 {% endblock content %}

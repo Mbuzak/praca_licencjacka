@@ -3,9 +3,19 @@
 
 {% block content %}
 
-{% if members %}
+{% if is_member %}
+    {% for i in is_member %}
+        <form method="post" action="{% url 'leave_club' i.id %}">
+           {% csrf_token %}
+            <button class="button" id="red-button" type="sumbit">Opuść</button>
+        </form>
+        <form method="post" action="{% url 'leave_club2' i.id %}">
+           {% csrf_token %}
+            <button class="button" id="red-button" type="sumbit">Opuść2</button>
+        </form>
+    {% endfor %}
 {% else %}
-    <form method="get" action="{% url 'join_club' %}">
+    <form method="get" action="{% url 'join_club' club.id %}">
         {% csrf_token %}
         {{form.as_p}}
         <button class="button" id="green-button" type="sumbit">Dołącz</button>
@@ -13,37 +23,20 @@
 {% endif %}
 
 
-{% for member in members %}
-    {% if member.id_person == user.id %}
-        <form method="get" action="{% url 'join_club' %}">
-            {% csrf_token %}
-            {{form.as_p}}
-            <button class="button" id="green-button" type="sumbit">Dołącz</button>
-        </form>
-    {% endif %}
-{% endfor %}
-
-
-{% for tp in members %}
-    {% if tournament.id == tp.id_tournament.id %}
-        <form method="post" action="{% url 'leave_club' tp.id %}">
-           {% csrf_token %}
-            <button class="button" id="red-button" type="sumbit">Opuść</button>
-        </form>
-    {% endif %}
-{% endfor %}
-
 
 <h1>Informacje podstawowe</h1>
 <p>Nazwa: {{ club.name }} <br>
 Kontakt: {{ club.email }} <br>
-Adres: {{ club.address.province }}, {{ club.address.city }}, {{ club.address.street }}, {{ club.address.house_number }} <br>
-Menadżer: {{ club.id_manager }} <br>
+Województwo: {{ club.address.province }} <br>
+Miasto: {{ club.address.city }} <br>
+Ulica: {{ club.address.street }}, {{ club.address.house_number }} <br>
+Menadżer: {{ club.manager }} <br>
+Data rejestracji: {{ club.registration|date:"d-m-Y" }} <br>
 </p>
 
 <h1>Członkowie klubu</h1>
 {% for member in members %}
-    {{ member.id_person }}
+<p>{{ member.person }}</p>
 {% endfor %}
 
 

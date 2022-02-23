@@ -9,12 +9,43 @@
 <p>Email: {{ user.email }}</p>
 <p>Płeć: {{ user.gender }}</p>
 <p>Rok urodzenia: {{ user.born_year }}</p>
+<p>Kraj: {{ user.country }}</p>
+<p>Miasto: {{ user.city }}</p>
+{% if user.club %}
+    <p>Klub: {{ user.club }}</p>
+{% endif %}
 
-<h1>Lista turnieji użytkownika</h1>
+Kategoria: {{ best_title.name }}
 
-{% for tournament in user_tournaments %}
-    {{ tournament.id_person }}
-    {{ tournament.id_tournament }}
-{% endfor %}
+<h1>Lista turniejów użytkownika</h1>
+{% if active_tournaments %}
+    {% for tournament in active_tournaments %}
+        <p>{{ tournament.tournament }}</p>
+    {% endfor %}
+{% endif %}
+
+
+<h1>Lista tytułów szachowych</h1>
+{% if titles %}
+    <table>
+        <tr>
+            <th>Kategoria</th>
+            <th>Data zdobycia</th>
+            <th>Turniej</th>
+            <th>Sędzia</th>
+            <th>Tempo gry</th>
+        </tr>
+        {% for title in titles %}
+            <tr>
+                <td>{{ title.name }}</td>
+                <td>{{ title.obtain|date:"d-m-Y" }}</td>
+                <td>{{ title.tournament }}</td>
+                <td>{{ title.tournament.judge }}</td>
+                <td>{{ title.tournament.game_rate }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
 
 {% endblock content %}

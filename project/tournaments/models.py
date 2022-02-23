@@ -3,7 +3,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from chessAPI import settings
 import model_helpers
-from accounts.models import Account
 
 
 PROVINCE_CHOICES = [
@@ -53,7 +52,7 @@ class Address(models.Model):
 
 class Tournament(models.Model):
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(verbose_name='Nazwa turnieju', max_length=100, default='')
+    name = models.CharField(verbose_name='Nazwa turnieju', max_length=100, unique=True, default='')
     start = models.DateField(verbose_name='Data rozpoczęcia', default=datetime.date.today)
     end = models.DateField(verbose_name='Data zakończenia', default=datetime.date.today)
 
@@ -63,14 +62,10 @@ class Tournament(models.Model):
     game_type = models.CharField(verbose_name='Rodzaj gry', choices=GAME_TYPE_CHOICES, max_length=20, default='')
     is_fide = models.BooleanField(verbose_name='Czy turniej jest rankingowy FIDE?', default=False)
 
-    address = models.OneToOneField(Address, on_delete=models.CASCADE, default=1, verbose_name='Adres')
-    # province = models.CharField(max_length=10, blank=True)  # TBD
-    # city = models.CharField(max_length=50, blank=True)
-    # details = models.CharField(max_length=100, blank=True)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='Adres')
 
     organizer = models.CharField(verbose_name='Organizator', max_length=100, default='')
-    id_judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                                 null=True, blank=True, verbose_name='Sędzia')
+    judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Sędzia', default='')
 
     def __str__(self):
         return self.name
@@ -86,5 +81,12 @@ class Tournament(models.Model):
 
 class TournamentMember(models.Model):
     id = models.BigAutoField(primary_key=True)
-    id_person = models.ForeignKey(Account, on_delete=models.CASCADE)
-    id_tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    person = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+
+
+# Player can create/delete application
+# Tournament's judge can accept(TournamentMember) or refuse players application
+class TournamentApplication(models.Model):
+    person = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)

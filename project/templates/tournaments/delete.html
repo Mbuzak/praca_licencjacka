@@ -3,10 +3,11 @@
 
 {% block content %}
 	<form method="POST">
-		<h2>Usuń turniej</h2>
+		<p style="font-size: 22px;">
+		    Czy jesteś pewnien że chcesz usunąć {{ tournament }}? <br>
+			Wszystkie dane zostaną usunięte
+		</p>
 		{% csrf_token %}
-		<strong>Czy jesteś pewnien?</strong>
-		<br><br>
-		<button type="sumbit">Usuń</button>
+		<button type="sumbit" class="button" id="red-button">Usuń</button>
 	</form>
 {% endblock content %}

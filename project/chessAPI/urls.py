@@ -24,6 +24,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('tournaments/', include('tournaments.urls')),
+    path('clubs/', include('clubs.urls')),
     path('home/', TemplateView.as_view(template_name='home.html')),
 
     path('register/', RegisterView.as_view(), name='register'),

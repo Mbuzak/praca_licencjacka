@@ -1,12 +1,15 @@
-from django.urls import path, include
-
+from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('', IndexView.as_view(), name='home'),
+    path('', IndexView.as_view(), name='home_tournaments'),
     path('create/', CreateTournament.as_view(), name='create_tournament'),
     path('<int:pk>/', DetailTournament.as_view(), name='detail_tournament'),
     path('update/<int:pk>/', UpdateTournament.as_view(), name='update_tournament'),
     path('delete/<int:pk>/', DeleteTournament.as_view(), name='delete_tournament'),
-    path('join/', CreateTournamentMember.as_view(), name='join_tournament'),
+    path('<int:application_id>/join/', CreateMember.as_view(), name='create_tournament_member'),
+    path('<int:pk>/leave/', DeleteMember.as_view(), name='leave_tournament'),
+    path('<int:pk>/application/create', CreateApplication.as_view(), name='create_tournament_application'),
+    path('<int:pk>/application/', IndexApplication.as_view(), name='detail_tournament_application'),
+    path('<int:pk>/application/delete/', DeleteApplication.as_view(), name='delete_tournament_application'),
 ]

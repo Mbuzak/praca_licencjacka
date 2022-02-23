@@ -2,11 +2,10 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, DetailView
 from django.views.generic.edit import CreateView, UpdateView
-from accounts.forms import RegisterForm
-from accounts.models import Account
+from .forms import RegisterForm
+from .models import Account
 from tournaments.models import TournamentMember
-
-# Create your views here.
+from ratings.models import PolishRating
 
 
 class RegisterView(CreateView):
@@ -23,5 +22,7 @@ class ProfileView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user_tournaments'] = TournamentMember.objects.all()
+        context['active_tournaments'] = TournamentMember.objects.filter(person=self.request.user)
+        context['titles'] = PolishRating.objects.filter(person=self.request.user)
+        context['best_title'] = PolishRating.objects.filter(person=self.request.user).order_by('name')[0]
         return context
