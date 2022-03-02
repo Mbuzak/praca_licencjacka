@@ -1,28 +1,8 @@
 import datetime
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
 from chessAPI import settings
 import model_helpers
+from addresses.models import *
 
-
-PROVINCE_CHOICES = [
-    ('pomorskie', 'PO'),
-    ('zachodnio-pomorskie', 'ZP'),
-    ('kujawsko-pomorskie', 'KP'),
-    ('warmińsko-mazurskie', 'WM'),
-    ('mazowieckie', 'MA'),
-    ('małopolskie', 'MP'),
-    ('lubelskie', 'LU'),
-    ('lubuskie', 'LB'),
-    ('opolskie', 'OP'),
-    ('dolnośląskie', 'DS'),
-    ('śląskie', 'SL'),
-    ('wielkopolskie', 'WP'),
-    ('świętokrzyskie', 'SK'),
-    ('podlaskie', 'PL'),
-    ('łódzkie', 'LU'),
-    ('podkarpackie', 'PK'),
-]
 
 GAME_TYPE_CHOICES = [
     ('blitz', 'błyskawiczne'),
@@ -37,24 +17,59 @@ GAME_SYSTEM_CHOICES = [
 ]
 
 
-class Address(models.Model):
-    id = models.AutoField(primary_key=True)
-    country = models.CharField(verbose_name='Kraj', max_length=50, default='')
-    province = models.CharField(verbose_name='Województwo', max_length=20, default='', choices=PROVINCE_CHOICES)
-    city = models.CharField(verbose_name='Miasto', max_length=50, default='')
-    street = models.CharField(verbose_name='Ulica', max_length=100, default='')
-    house_number = models.IntegerField(verbose_name='Numer domu', default=1,
-                                       validators=[MaxValueValidator(500), MinValueValidator(1)])
+TITLE_CHOICES = [
+    ('b/k', 'b/k'),
+    ('V', 'V'),
+    ('IV', 'IV'),
+    ('III', 'III'),
+    ('II', 'II'),
+    ('II+', 'II+'),
+    ('I', 'I'),
+    ('I+', 'I+'),
+    ('I++', 'I++'),
+    ('k', 'k'),
+    ('m', 'm'),
+]
 
-    def __str__(self):
-        return str(self.province) + ', ' + str(self.city)
+
+MALE_TITLES = {'b/k': 1000,
+               'V': 1200,
+               'IV': 1400,
+               'III': 1600,
+               'II': 1800,
+               'II+': 1900,
+               'I': 2000,
+               'I+': 2100,
+               'I++': 2100,
+               'k': 2200,
+               'k+': 2300,
+               'k++': 2300,
+               'm': 2400,
+               }
+
+
+FEMALE_TITLES = {'b/k': 1000,
+               'V': 1100,
+               'IV': 1250,
+               'III': 1400,
+               'II': 1600,
+               'II+': 1700,
+               'I': 1800,
+               'I+': 1900,
+               'I++': 1900,
+               'k': 2000,
+               'k+': 2100,
+               'k++': 2100,
+               'm': 2200,
+               }
 
 
 class Tournament(models.Model):
-    id = models.BigAutoField(primary_key=True)
     name = models.CharField(verbose_name='Nazwa turnieju', max_length=100, unique=True, default='')
     start = models.DateField(verbose_name='Data rozpoczęcia', default=datetime.date.today)
     end = models.DateField(verbose_name='Data zakończenia', default=datetime.date.today)
+    round_count = models.IntegerField(verbose_name='Liczba rund', default=1, validators=[MinValueValidator(1),
+                                                                                         MaxValueValidator(30)])
 
     game_rate = models.CharField(verbose_name='Tempo gry', max_length=10, default='')
     game_system = models.CharField(verbose_name='System rozgrywek', max_length=20, choices=GAME_SYSTEM_CHOICES,
@@ -80,13 +95,26 @@ class Tournament(models.Model):
 
 
 class TournamentMember(models.Model):
-    id = models.BigAutoField(primary_key=True)
     person = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
 
 
-# Player can create/delete application
-# Tournament's judge can accept(TournamentMember) or refuse players application
 class TournamentApplication(models.Model):
     person = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+
+
+class Round(models.Model):
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    round = models.IntegerField()
+
+
+class Match(models.Model):
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    chessboard = models.IntegerField()
+    # players
+    white = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='match_white')
+    black = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='match_black')
+    # results
+    white_result = models.CharField(max_length=20, default='', blank=True)
+    black_result = models.CharField(max_length=20, default='', blank=True)

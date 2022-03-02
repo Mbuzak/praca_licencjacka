@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 
+SECRET_KEY = 'django-insecure-_d@hv^a9x&--1l*!5g(sm)5s8q89b-pim$8kg9)k9l@c_yj#^7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -43,9 +43,14 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'tournaments.apps.TournamentsConfig',
     'clubs.apps.ClubsConfig',
+    'ratings.apps.RatingsConfig',
+    'addresses.apps.AddressesConfig',
 
     # crispy form
     'crispy_forms',
+
+    # filter
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -149,7 +154,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # login & logout path
 LOGIN_REDIRECT_URL = '/home'
-LOGOUT_REDIRECT_URL = '/home'
+LOGOUT_REDIRECT_URL = 'login'
 
 # upload images
 MEDIA_URL = '/media/'

@@ -1,15 +1,18 @@
-# accounts/models.py
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 from clubs.models import Club
+from country_list import countries_for_language
+from tournaments.models import TITLE_CHOICES, MALE_TITLES, FEMALE_TITLES
 
 GENDER_CHOICES = [
     ('M', 'mężczyzna'),
     ('K', 'kobieta'),
 ]
+
+COUNTRY_CHOICES = countries_for_language('pl')
+
 
 
 class AccountManager(BaseUserManager):
@@ -53,7 +56,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
     gender = models.CharField(verbose_name="Płeć", max_length=20, choices=GENDER_CHOICES, default='')
     born_year = models.IntegerField(verbose_name="Rok urodzenia", default=1970,
                                     validators=[MinValueValidator(1900), MaxValueValidator(2200)])
-    country = models.CharField(verbose_name="Państwo", max_length=20, default='')
+    country = models.CharField(verbose_name="Państwo", max_length=20, choices=COUNTRY_CHOICES,
+                               default=COUNTRY_CHOICES[165])
     city = models.CharField(verbose_name="Miasto", max_length=20, default='')
 
     picture = models.ImageField(blank=True, null=True)
@@ -62,6 +66,9 @@ class Account(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(null=True)
     club = models.ForeignKey(Club, on_delete=models.CASCADE, null=True, related_name='accounts')
+    title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True, null=True)  # TBD
+    # title = models.CharField(max_length=50, default='')
+    # id_fide = models.CharField(max_length=20, default='')
 
     objects = AccountManager()
 
@@ -71,8 +78,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.name + " " + self.lastname
 
-    #def get_full_name(self):
-    #    return self.name
+    def get_id_cr(self):
+        return 'PL-' + str(self.pk)
 
-    #def get_short_name(self):
-    #    return self.name.split()[0]
+    def get_polish_rating(self):
+        if self.gender == 'M':
+            return MALE_TITLES[self.title]
+        return FEMALE_TITLES[self.title]

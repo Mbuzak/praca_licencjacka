@@ -26,6 +26,8 @@
                             <div class="dropdown-divider"></div>
                             <a href="{% url "home_club" %}" class="dropdown-item">Kluby</a>
                             <div class="dropdown-divider"></div>
+                            <a href="{% url "home_accounts" %}" class="dropdown-item">Użytkownicy</a>
+                            <div class="dropdown-divider"></div>
                             <a href="{% url "logout" %}" class="dropdown-item">Wyloguj</a>
                         </div>
                     </li>
@@ -34,14 +36,17 @@
         {% endif %}
     </nav>
 
+    <div id="nav-space"></div>
     <div class="container">
         {% block content %}
 
         {% endblock %}
-
     </div>
+    <footer>Copyright 2022</footer>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
 </body>
 </html>

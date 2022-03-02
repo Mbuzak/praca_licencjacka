@@ -1,9 +1,7 @@
 import datetime
-
 from django.db import models
-
 from chessAPI import settings
-from tournaments.models import Address
+from addresses.models import Address
 
 
 class Club(models.Model):
@@ -28,3 +26,8 @@ class ClubMember(models.Model):
 
     def __str__(self):
         return self.club.name
+
+
+class ClubApplication(models.Model):
+    person = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    club = models.ForeignKey(Club, on_delete=models.CASCADE)

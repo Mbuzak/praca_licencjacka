@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h1>Profil użytkownika</h1>
+<table>
+    <tr>
+        <th>ID</th>
+        <td>{{ user.get_id_cr }}</td>
+    </tr>
+
+    <tr>
+        <th>Imię</th>
+        <td>{{ user.name }}</td>
+    </tr>
+
+    <tr>
+        <th>Nazwisko</th>
+        <td>{{ user.lastname }}</td>
+    </tr>
+
+    <tr>
+        <th>Email</th>
+        <td>{{ user.email }}</td>
+    </tr>
+
+    <tr>
+        <th>Płeć</th>
+        <td>{{ user.gender }}</td>
+    </tr>
+
+    <tr>
+        <th>Rok urodzenia</th>
+        <td>{{ user.born_year }}</td>
+    </tr>
+
+    <tr>
+        <th>Kraj</th>
+        <td>{{ user.country }}</td>
+    </tr>
+
+    <tr>
+        <th>Miasto</th>
+        <td>{{ user.city }}</td>
+    </tr>
+
+    <tr>
+        <th>Kategoria</th>
+        <td>{{ best_title.name__min }}</td>
+    </tr>
+
+    <tr>
+        <th>Klub</th>
+        <td>{{ user.club }}</td>
+    </tr>
+</table>
+
+<h1>Lista turniejów użytkownika</h1>
+{% if active_tournaments %}
+    {% for tournament in active_tournaments %}
+        <p>{{ tournament.tournament }}</p>
+    {% endfor %}
+{% endif %}
+
+
+<h1>Lista tytułów szachowych</h1>
+{% if titles %}
+    <table>
+        <tr>
+            <th>Kategoria</th>
+            <th>Data zdobycia</th>
+            <th>Turniej</th>
+            <th>Sędzia</th>
+            <th>Tempo gry</th>
+        </tr>
+        {% for title in titles %}
+            <tr>
+                <td>{{ title.name }}</td>
+                <td>{{ title.obtain|date:"d-m-Y" }}</td>
+                <td>{{ title.tournament }}</td>
+                <td>{{ title.tournament.judge }}</td>
+                <td>{{ title.tournament.game_rate }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+<h1>Historia klubów</h1>
+
+{% endblock content %}

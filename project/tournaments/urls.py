@@ -12,4 +12,11 @@ urlpatterns = [
     path('<int:pk>/application/create', CreateApplication.as_view(), name='create_tournament_application'),
     path('<int:pk>/application/', IndexApplication.as_view(), name='detail_tournament_application'),
     path('<int:pk>/application/delete/', DeleteApplication.as_view(), name='delete_tournament_application'),
+    # rounds
+    path('<int:tournament_id>/round/<int:pk>/', RoundView.as_view(), name='detail_round'),
+    path('<int:pk>/round/create/', CreateRound.as_view(), name='create_round'),
+    # matches
+    path('<int:tournament_id>/round/<int:pk>/result/', UpdateMatch.as_view(), name='update_match'),
+    # members
+    path('<int:pk>/members', MembersView.as_view(), name='tournament_members'),
 ]

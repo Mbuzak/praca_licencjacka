@@ -2,6 +2,8 @@
 
 
 {% block content %}
+<a href="/clubs/{{ club.id }}/application">Zgłoszenie do klubu</a> <br>
+
 
 {% if is_member %}
     {% for i in is_member %}
@@ -14,12 +16,6 @@
             <button class="button" id="red-button" type="sumbit">Opuść2</button>
         </form>
     {% endfor %}
-{% else %}
-    <form method="get" action="{% url 'join_club' club.id %}">
-        {% csrf_token %}
-        {{form.as_p}}
-        <button class="button" id="green-button" type="sumbit">Dołącz</button>
-    </form>
 {% endif %}
 
 

@@ -16,8 +16,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-
-from accounts import views
 from accounts.views import RegisterView, ProfileView
 from django.views.generic import TemplateView
 
@@ -25,12 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('tournaments/', include('tournaments.urls')),
     path('clubs/', include('clubs.urls')),
+    path('accounts/', include('accounts.urls')),
     path('home/', TemplateView.as_view(template_name='home.html')),
-
-    path('register/', RegisterView.as_view(), name='register'),
-    path('profile/<int:pk>/', ProfileView.as_view(), name='profile'),
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='register/login.html'), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # path('password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
     # path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),

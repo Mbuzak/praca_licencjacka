@@ -8,19 +8,11 @@ class TournamentAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('Tournament', {'fields': ['name', 'start', 'end', 'address']}),
-        ('Game details', {'fields': ['game_rate', 'game_system', 'is_fide', 'game_type']}),
+        ('Game details', {'fields': ['game_rate', 'game_system', 'is_fide', 'game_type', 'round_count']}),
         ('Organizer', {'fields': ['judge', 'organizer']})
     ]
     list_filter = ['start']
     list_display = ('name', 'start')
-
-
-class AddressAdmin(admin.ModelAdmin):
-    fieldsets = [
-        ('Address', {'fields': ['country', 'province', 'city', 'street', 'house_number']})
-    ]
-    list_filter = ['country', 'province']
-    list_display = ('country', 'province', 'city', 'street')
 
 
 class TournamentApplicationAdmin(admin.ModelAdmin):
@@ -31,6 +23,32 @@ class TournamentApplicationAdmin(admin.ModelAdmin):
     list_display = ('person', 'tournament')
 
 
+class TournamentMemberAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (None, {'fields': ['person', 'tournament']})
+    ]
+
+    list_display = ('person', 'tournament')
+
+
+class RoundAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (None, {'fields': ['tournament', 'round']})
+    ]
+
+    list_display = ('tournament', 'round')
+
+
+class MatchAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (None, {'fields': ['round', 'chessboard', 'white', 'black', 'white_result', 'black_result']})
+    ]
+
+    list_display = ('round', 'chessboard', 'white', 'black', 'white_result', 'black_result')
+
+
 admin.site.register(Tournament, TournamentAdmin)
-admin.site.register(Address, AddressAdmin)
 admin.site.register(TournamentApplication, TournamentApplicationAdmin)
+admin.site.register(TournamentMember, TournamentMemberAdmin)
+admin.site.register(Match, MatchAdmin)
+admin.site.register(Round, RoundAdmin)

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h1>Lista startowa</h1>
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>Nr FIDE</th>
+        <th>Id-cr</th>
+        <th>Tytuł</th>
+        <th>Imię Nazwisko</th>
+        <th>Państwo</th>
+        <th>FIDE</th>
+        <th>Ranking</th>
+        <th>Klub</th>
+        <th>Data ur.</th>
+
+    </tr>
+    {% for member in members %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td>{{ member.person.id }}</td>
+            <td>{{ member.person.title }}</td>
+            <td>{{ member.person }}</td>
+            <td>{{ member.person.country }}</td>
+            <td></td>
+            <td>{{ member.person.get_polish_rating }}</td>
+            <td></td>
+            <td>{{ member.person.born_year }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock content %}

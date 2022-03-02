@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+	<form method="post">
+		<p style="font-size: 22px;">
+		    Czy jesteś pewnien że chcesz opuścić {{ tournamentmember.tournament }}? <br>
+		</p>
+		{% csrf_token %}
+		<button type="sumbit" class="button" id="red-button">Tak, opuść</button>
+	</form>
+{% endblock content %}

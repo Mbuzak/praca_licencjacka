@@ -12,6 +12,8 @@ class AccountAdmin(admin.ModelAdmin):
     list_filter = ()
     fieldsets = [
         (None, {'fields': ('email', 'name', 'lastname', 'born_year')}),
+        ('Adres', {'fields': ('country', 'city')}),
+        ('Title', {'fields': ('title', )})
     ]
 
     search_fields = ('email',)

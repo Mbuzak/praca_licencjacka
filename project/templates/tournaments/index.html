@@ -24,7 +24,11 @@
 {% if object_list %}
     <table id="tournaments">
         <tr>
-            <th colspan="3">.Miesiąc, Rok.</th>
+            <th>Termin</th>
+            <th>Nazwa</th>
+            <th>Adres</th>
+            <th>Rodzaj</th>
+            <th>Turniej FIDE</th>
         </tr>
         {% for tournament in object_list %}
             <tr>
@@ -33,12 +37,18 @@
                     <p style="color: {{ tournament.status }}; line-height: 0.5; font-size: 12px;">{{ tournament.end|date:"d-m-Y" }}</p>
                 </td>
                 <td>
-                    <a href="/tournaments/{{ tournament.id }}/">{{ tournament.name }}</a> <br>
-                    {{ tournament.address.city }}
+                    <a href="{% url 'detail_tournament' tournament.id %}">{{ tournament.name }}</a>
                 </td>
                 <td>
-                    {{ tournament.address.country }}, {{ tournament.address.province }} <br>
-                    {{ tournament.game_type }} {{ tournament.is_fide }}
+                    {{ tournament.address.province }}, {{ tournament.address.city }}
+                </td>
+
+                <td>
+                    {{ tournament.game_type }}
+                </td>
+
+                <td>
+                    {{ tournament.is_fide|yesno:"FIDE, " }}
                 </td>
             </tr>
         {% endfor %}

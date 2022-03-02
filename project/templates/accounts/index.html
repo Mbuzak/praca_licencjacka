@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<table>
+    <tr>
+        <th>Nr</th>
+        <th>ID</th>
+        <th>ID FIDE</th>
+        <th>Tytuł</th>
+        <th>Imię Nazwisko</th>
+        <th>Klub</th>
+        <th>Kraj</th>
+        <th>Miasto</th>
+    </tr>
+    {% for account in object_list %}
+        <tr>
+            <td>{{ account.nr }}</td>
+            <td>{{ account.id }}</td>
+            <td>{{ account.id_fide }}</td>
+            <td>{{ account.title }}</td>
+            <td>{{ account }}</td>
+            <td>{{ account.club }}</td>
+            <td>{{ account.country }}</td>
+            <td>{{ account.city }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock content %}
