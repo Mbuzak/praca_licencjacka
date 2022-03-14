@@ -1,8 +1,6 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-
-from accounts.models import Account
-from accounts.forms import EditProfileForm, RegisterForm
+from .models import Account
+from .forms import EditProfileForm, RegisterForm
 
 
 class AccountAdmin(admin.ModelAdmin):
@@ -11,12 +9,12 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ('email', 'name', 'lastname', 'born_year')
     list_filter = ()
     fieldsets = [
-        (None, {'fields': ('email', 'name', 'lastname', 'born_year')}),
-        ('Adres', {'fields': ('country', 'city')}),
-        ('Title', {'fields': ('title', )})
+        (None, {'fields': ('email', 'name', 'lastname', 'gender', 'born_year')}),
+        ('Address', {'fields': ('country', 'province', 'city')}),
+        ('Title', {'fields': ('category', 'fide_number', 'fide')})
     ]
 
     search_fields = ('email',)
 
 
-admin.site.register(Account, AccountAdmin)  # TBD -> AUTH_USER_MODEL
+admin.site.register(Account, AccountAdmin)

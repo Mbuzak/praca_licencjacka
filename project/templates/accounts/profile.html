@@ -2,68 +2,37 @@
 
 
 {% block content %}
-<h1>Profil użytkownika</h1>
-<table>
+<p class="a">{{ account }} {{ account.category }}</p>
+<p>Profil użytkownika</p>
+<p class="c">{{ account.get_id_cr }}</p>
+
+<i class="fa fa-map-marker"></i>
+{{ account.country }}
+{% if city %}
+    , {{ account.city }}
+{% endif %}
+
+{% if province %}
+    <div>{{ account.province }}<p>(WZSzach)</p></div>
+{% endif %}
+
+<p style="font-size: 24px; padding-top: 20px;">Ranking FIDE</p>
+<p style="font-size: 14px;">{{ account.fide_number|default_if_none:"" }}</p>
+<table style="text-align: center;">
     <tr>
-        <th>ID</th>
-        <td>{{ user.get_id_cr }}</td>
+        <th style="padding-right: 20px;">Std</th>
+        <th style="padding-right: 20px;">Rapid</th>
+        <th>Blitz</th>
     </tr>
 
     <tr>
-        <th>Imię</th>
-        <td>{{ user.name }}</td>
-    </tr>
-
-    <tr>
-        <th>Nazwisko</th>
-        <td>{{ user.lastname }}</td>
-    </tr>
-
-    <tr>
-        <th>Email</th>
-        <td>{{ user.email }}</td>
-    </tr>
-
-    <tr>
-        <th>Płeć</th>
-        <td>{{ user.gender }}</td>
-    </tr>
-
-    <tr>
-        <th>Rok urodzenia</th>
-        <td>{{ user.born_year }}</td>
-    </tr>
-
-    <tr>
-        <th>Kraj</th>
-        <td>{{ user.country }}</td>
-    </tr>
-
-    <tr>
-        <th>Miasto</th>
-        <td>{{ user.city }}</td>
-    </tr>
-
-    <tr>
-        <th>Kategoria</th>
-        <td>{{ best_title.name__min }}</td>
-    </tr>
-
-    <tr>
-        <th>Klub</th>
-        <td>{{ user.club }}</td>
+        <td style="padding-right: 20px">{{ account.fide.classic }}</td>
+        <td style="padding-right: 20px">{{ account.fide.rapid }}</td>
+        <td style="padding-right: 20px">{{ account.fide.blitz }}</td>
     </tr>
 </table>
 
-<h1>Lista turniejów użytkownika</h1>
-{% if active_tournaments %}
-    {% for tournament in active_tournaments %}
-        <p>{{ tournament.tournament }}</p>
-    {% endfor %}
-{% endif %}
-
-
-<h1>Lista tytułów szachowych</h1>
+<p style="font-size: 24px; padding-top: 20px;">Ranking PZSzach</p>
 {% if titles %}
     <table>
         <tr>
@@ -84,6 +53,28 @@
         {% endfor %}
     </table>
 {% endif %}
-<h1>Historia klubów</h1>
+
+
+<p style="font-size: 24px; padding-top: 20px;">Turnieje użytkownika</p>
+<p>Planowane</p>
+{% for tournament in active_tournaments %}
+    {% if tournament.tournament.status == "coming soon" %}
+        <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
+    {% endif %}
+{% endfor %}
+
+<p>W trakcie</p>
+{% for tournament in active_tournaments %}
+    {% if tournament.tournament.status == "ongoing" %}
+        <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
+    {% endif %}
+{% endfor %}
+
+<p>Ukończone</p>
+{% for tournament in active_tournaments %}
+    {% if tournament.tournament.status == "ended" %}
+        <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
+    {% endif %}
+{% endfor %}
 
 {% endblock content %}

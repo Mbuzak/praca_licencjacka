@@ -2,24 +2,9 @@
 
 
 {% block content %}
-
-{% if messages %}
-    {% for message in messages %}
-        <div class="text-center alert alert-{{ message.tags }}">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="True">&times;</span>
-            </button>
-             {{ message|safe }}
-        </div>
-    {% endfor %}
-{% endif %}
-
-<div class="inner">
-    <form action="{% url 'create_tournament' %}" method="get">
-        {% csrf_token %}
-        <button type="submit" class="button" id="green-button">Dodaj turniej</button>
-    </form>
-</div>
+<form action="{% url 'create_tournament' %}" method="get">
+    <button type="submit" class="btn btn-primary">Nowy turniej</button>
+</form>
 
 {% if object_list %}
     <table id="tournaments">
@@ -33,23 +18,13 @@
         {% for tournament in object_list %}
             <tr>
                 <td style="padding-bottom: 0px;">
-                    <p style="color: {{ tournament.status }}; line-height: 0.5;">{{ tournament.start|date:"d-m-Y" }}</p>
-                    <p style="color: {{ tournament.status }}; line-height: 0.5; font-size: 12px;">{{ tournament.end|date:"d-m-Y" }}</p>
+                    <p style="color: {{ tournament.color_status }}; line-height: 0.5;">{{ tournament.start|date:"d-m-Y" }}</p>
+                    <p style="color: {{ tournament.color_status }}; line-height: 0.5; font-size: 12px;">{{ tournament.end|date:"d-m-Y" }}</p>
                 </td>
-                <td>
-                    <a href="{% url 'detail_tournament' tournament.id %}">{{ tournament.name }}</a>
-                </td>
-                <td>
-                    {{ tournament.address.province }}, {{ tournament.address.city }}
-                </td>
-
-                <td>
-                    {{ tournament.game_type }}
-                </td>
-
-                <td>
-                    {{ tournament.is_fide|yesno:"FIDE, " }}
-                </td>
+                <td><a href="{% url 'detail_tournament' tournament.id %}">{{ tournament.name }}</a></td>
+                <td>{{ tournament.address.province }}, {{ tournament.address.city }}</td>
+                <td>{{ tournament.game_type }}</td>
+                <td>{{ tournament.is_fide|yesno:"FIDE, " }}</td>
             </tr>
         {% endfor %}
     </table>

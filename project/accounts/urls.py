@@ -8,4 +8,6 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('<int:pk>/', ProfileView.as_view(), name='profile'),
+
+    path('<int:pk>/fide_update/', UpdateAccountFideView.as_view(), name='update_account_fide'),
 ]

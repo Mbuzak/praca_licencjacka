@@ -1,40 +1,59 @@
-{% extends 'base.html' %}
+{% extends 'base_tournament.html' %}
 
+
+{% block description %}
+<p>Zgłoszenia</p>
+{% endblock description %}
 
 {% block content %}
-    {% if not has_application and tournament.judge.id != user.id and not is_member %}
-        <form method="get" action="{% url 'create_tournament_application' tournament.id %}">
-            {% csrf_token %}
-            {{form.as_p}}
-            <button class="button" id="green-button" type="sumbit">Dodaj zgłoszenie</button>
-        </form>
-    {% endif %}
+{% if not has_application and tournament.judge.id != user.id and not is_member %}
+    <form method="get" action="{% url 'create_tournament_application' tournament.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Zapisz się</button>
+    </form>
+{% endif %}
 
-    <table>
-        <tr>
-            <th>Imię Nazwisko</th>
-            <th>Kraj</th>
-            <th>Opcje</th>
-        </tr>
-        {% if applications %}
-            {% for application in applications %}
-                <tr>
-                    <td>{{ application.person }}</td>
-                    <td>{{ application.person.country }}</td>
-                    {% if tournament.judge.id == user.id %}
-                        <td><a href="{% url 'create_tournament_member' application_id=application.id %}">Dodaj</td>
-                        <td>
-                            <form method="POST" action="{% url 'delete_tournament_application' application.id %}">
-                                {% csrf_token %}
-                                <button type="sumbit" class="button" id="red-button">Usuń</button>
-                            </form>
-                        </td>
-                    {% else %}
-                        <td></td>
-                        <td></td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
+{% if user.id == tournament.judge.id %}
+    <form method="get" class="form-inline" action="{% url 'create_tournament_members' tournament.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Dodaj wszystkich</button>
+    </form>
+{% endif %}
+
+<div class="list-display">
+    <div>Numer</div>
+    <div>Kraj</div>
+    <div>Imię Nazwisko</div>
+    <div>Klub/miasto</div>
+    <div>Kategoria</div>
+    <div>FIDE</div>
+    <div>PZSzach</div>
+    <div class="row-border"></div>
+    {% for application in applications %}
+        <div>{{ forloop.counter }}</div>
+        <div>{{ application.person.country }}</div>
+        <div>{{ application.person }}</div>
+        <div></div>
+        <div>{{ application.person.category }}</div>
+        <div>
+            {% if tournament.game_type == "classic" %}
+                {{ application.person.fide.classic }}
+            {% elif tournament.game_type == "rapid" %}
+                {{ application.person.fide.rapid }}
+            {% else %}
+                {{ application.person.fide.blitz }}
+            {% endif %}
+        </div>
+        <div>{{ application.person.get_polish_rating }}</div>
+        {% if tournament.judge.id == user.id %}
+            <form method="get" action="{% url 'create_tournament_member' application_id=application.id %}">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i></button>
+            </form>
+            <form method="post" action="{% url 'delete_tournament_application' application.id %}">
+                <button type="submit" class="btn btn-danger"><i class="fa fa-minus"></i></button>
+            </form>
         {% endif %}
-    </table>
+        <div class="row-border"></div>
+    {% endfor %}
+</div>
 {% endblock content %}

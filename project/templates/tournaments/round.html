@@ -1,33 +1,30 @@
-{% extends 'base.html' %}
+{% extends 'base_tournament.html' %}
 
+
+{% block description %}
+<p>Runda {{ round_number }}</p>
+{% endblock description %}
 
 {% block content %}
-<h1>Runda {{ round_number }}</h1>
-{% if matches %}
-    <table id="tournaments">
-        <tr>
-            <th>Szachownica</th>
-            <th>Białe</th>
-            <th>Wynik</th>
-            <th>Czarne</th>
-        </tr>
-            {% for match in matches %}
-                <tr>
-                    <td>{{ match.chessboard }}</td>
-                    <td>{{ match.white }}</td>
-                    <td>
-                        {{ match.white_result }} - {{ match.black_result }}
-                    </td>
-                    <td>{{ match.black }}</td>
-                    <td>
-                        <form action="{% url 'update_match' match.round.tournament.id match.id %}" method="get">
-                            {% csrf_token %}
-                            {{ form }}
-                            <button class="button" id="green-button" type="submit">Wpisz wynik</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-    </table>
-{% endif %}
+<div class="list-display" id="list-display-round">
+    <div>Szachownica</div>
+    <div>Białe</div>
+    <div>Wynik</div>
+    <div>Czarne</div>
+    <div class="row-border"></div>
+    {% for match in matches %}
+        <div>{{ match.chessboard }}</div>
+        <div><a href="{% url 'tournament_profile' tournament.id match.white.id %}">{{ match.white }}</a></div>
+        <div>{{ match.white_result }} - {{ match.black_result }}</div>
+        <div><a href="{% url 'tournament_profile' tournament.id match.black.id %}">{{ match.black }}</a></div>
+        {% if user.id == tournament.judge.id %}
+            <form action="{% url 'update_match' match.round.tournament.id match.id %}" method="get">
+                {% csrf_token %}
+                {{ form }}
+                <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i></button>
+            </form>
+        {% endif %}
+        <div class="row-border"></div>
+    {% endfor %}
+</div>
 {% endblock content %}

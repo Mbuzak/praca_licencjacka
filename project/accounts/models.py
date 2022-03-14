@@ -4,7 +4,10 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from clubs.models import Club
 from country_list import countries_for_language
-from tournaments.models import TITLE_CHOICES, MALE_TITLES, FEMALE_TITLES
+from ratings.models import TITLE_CHOICES, TITLE
+from addresses.models import PROVINCE_CHOICES
+from ratings.models import FideRating
+
 
 GENDER_CHOICES = [
     ('M', 'mężczyzna'),
@@ -14,12 +17,11 @@ GENDER_CHOICES = [
 COUNTRY_CHOICES = countries_for_language('pl')
 
 
-
 class AccountManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, name, lastname, gender, born_year, country, city, password, **extra_fields):
-        values = [email, name, lastname, gender, born_year, country, city]
+    def _create_user(self, email, name, lastname, gender, born_year, country, password, **extra_fields):
+        values = [email, name, lastname, gender, born_year, country]
         field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
         for field_name, value in field_value_map.items():
             if not value:
@@ -27,17 +29,17 @@ class AccountManager(BaseUserManager):
 
         email = self.normalize_email(email)
         user = self.model(email=email, name=name, lastname=lastname, gender=gender, born_year=born_year,
-                          country=country, city=city, **extra_fields)
+                          country=country, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, name, lastname, gender, born_year, country, city, password=None, **extra_fields):
+    def create_user(self, email, name, lastname, gender, born_year, country, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, name, lastname, gender, born_year, country, city, password, **extra_fields)
+        return self._create_user(email, name, lastname, gender, born_year, country, password, **extra_fields)
 
-    def create_superuser(self, email, name, lastname, gender, born_year, country, city, password=None, **extra_fields):
+    def create_superuser(self, email, name, lastname, gender, born_year, country, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -46,7 +48,7 @@ class AccountManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self._create_user(email, name, lastname, gender, born_year, country, city, password, **extra_fields)
+        return self._create_user(email, name, lastname, gender, born_year, country, password, **extra_fields)
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
@@ -58,22 +60,25 @@ class Account(AbstractBaseUser, PermissionsMixin):
                                     validators=[MinValueValidator(1900), MaxValueValidator(2200)])
     country = models.CharField(verbose_name="Państwo", max_length=20, choices=COUNTRY_CHOICES,
                                default=COUNTRY_CHOICES[165])
-    city = models.CharField(verbose_name="Miasto", max_length=20, default='')
 
+    province = models.CharField(verbose_name='Ewidencja WZSzach', max_length=20, default='', blank=True,
+                                choices=PROVINCE_CHOICES())
+    city = models.CharField(verbose_name="Miasto", max_length=20, default='', blank=True)
     picture = models.ImageField(blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(null=True)
     club = models.ForeignKey(Club, on_delete=models.CASCADE, null=True, related_name='accounts')
-    title = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True, null=True)  # TBD
-    # title = models.CharField(max_length=50, default='')
-    # id_fide = models.CharField(max_length=20, default='')
+    category = models.CharField(max_length=10, choices=TITLE_CHOICES, blank=True, null=True)  # TBD
+
+    fide_number = models.CharField(max_length=20, blank=True, null=True, default=None)
+    fide = models.ForeignKey(FideRating, related_name='accounts', on_delete=models.CASCADE, null=True)
 
     objects = AccountManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'lastname', 'gender', 'born_year', 'country', 'city']
+    REQUIRED_FIELDS = ['name', 'lastname', 'gender', 'born_year', 'country']
 
     def __str__(self):
         return self.name + " " + self.lastname
@@ -81,7 +86,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def get_id_cr(self):
         return 'PL-' + str(self.pk)
 
+    def get_category(self):
+        if self.category == 'b/k':
+            return ''
+        return self.category
+
     def get_polish_rating(self):
         if self.gender == 'M':
-            return MALE_TITLES[self.title]
-        return FEMALE_TITLES[self.title]
+            return TITLE['male'][self.category]
+        return TITLE['female'][self.category]
+
+    def get_fide_number(self):
+        return self.fide_number if self.fide_number else ''

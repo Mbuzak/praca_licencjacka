@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 
 
-
 {% block content %}
-
 {% if messages %}
     {% for message in messages %}
         <div class="text-center alert alert-{{ message.tags }}">
@@ -15,12 +13,9 @@
     {% endfor %}
 {% endif %}
 
-<div class="inner">
-    <form action="{% url 'create_club' %}" method="get">
-        {% csrf_token %}
-        <button type="submit" class="button" id="green-button">Dodaj klub</button>
-    </form>
-</div>
+<form action="{% url 'create_club' %}" method="get">
+    <button type="submit" class="btn btn-primary">Nowy klub</button>
+</form>
 
 {% if object_list %}
     <table id="tournaments">
@@ -42,5 +37,4 @@
         {% endfor %}
     </table>
 {% endif %}
-
 {% endblock content %}

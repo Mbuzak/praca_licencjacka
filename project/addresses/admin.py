@@ -4,7 +4,7 @@ from .models import *
 
 class AddressAdmin(admin.ModelAdmin):
     fieldsets = [
-        ('Address', {'fields': ['province', 'city', 'street', 'house_number']})
+        ('Address', {'fields': ['province', 'city', 'street']})
     ]
     list_filter = ['province']
     list_display = ('province', 'city', 'street')

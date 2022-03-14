@@ -3,12 +3,12 @@
 
 
 {% block content %}
+<p class="a">Dodaj klub</p>
 <div class="col-md-4">
-	<form action="#" method="POST">
-		<h2>Klub</h2>
+	<form method="post">
 		{% csrf_token %}
 		{{form |crispy}}
-		<button type="sumbit" class="button" id="green-button">Dodaj klub</button>
+		<button type="submit" class="btn btn-primary">Dodaj klub</button>
 	</form>
 </div>
 {% endblock content %}

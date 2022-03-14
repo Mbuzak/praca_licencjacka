@@ -9,6 +9,8 @@ from .forms import *
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from ratings.models import PolishRating
+from django.db.models import Q
+from ratings.models import FideRating
 
 
 class IndexView(ListView):
@@ -25,11 +27,8 @@ class DetailTournament(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['tournament'] = Tournament.objects.get(pk=self.object.id)
-        #context['members'] = TournamentMember.objects.filter(tournament=self.object.id)
         context['is_member'] = TournamentMember.objects.all().filter(person=self.request.user.id, tournament=self.object.id)
-        # context['members_rating'] = PolishRating.objects.filter(tournament=self.object.id)
         context['rounds'] = Round.objects.filter(tournament_id=self.object.id).values('id', 'round')
-        #context['ratings'] = PolishRating.objects.values('person').annotate(Min('name')).order_by()
         return context
 
 
@@ -39,12 +38,36 @@ class MembersView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['members'] = TournamentMember.objects.filter(tournament=self.object.id)
+
+        def none_sorter(person):
+            if person.fide:
+                return person.fide.classic
+            return 0
+
+        context['members'] = sorted(TournamentMember.objects.filter(tournament=self.object.id), key=lambda x: (none_sorter(x.person), x.person.get_polish_rating()), reverse=True)
+        members_id = [item.person.id for item in context['members']]
+        context['fide'] = FideRating.objects.filter(person_id__in=members_id)
+
+        return context
+
+
+class ProfileView(DetailView):
+    model = Tournament
+    template_name = 'tournaments/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tournament_name'] = Tournament.objects.get(id=self.object.id)
+        context['member'] = TournamentMember.objects.get(tournament_id=self.object.id,
+                                                         person_id=self.kwargs['member_id'])
+        context['matches'] = Match.objects.filter(Q(white_id=self.kwargs['member_id']) | Q(black_id=self.kwargs['member_id']))
+
         return context
 
 
 class CreateTournament(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     form_class = TournamentForm
+
     template_name = 'tournaments/create.html'
     success_url = reverse_lazy('home_tournaments')
 
@@ -54,9 +77,11 @@ class CreateTournament(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 class UpdateTournament(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Tournament
+    fields = ('name', 'start', 'end')
     template_name = 'tournaments/update.html'
-    fields = ('judge',)
-    success_url = reverse_lazy('home_tournaments')
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('detail_tournament', kwargs={'pk': self.kwargs['pk']})
 
     def get_success_message(self, cleaned_data):
         return '%(name)s został zaktualizowany' % {'name': self.object.name}
@@ -79,13 +104,32 @@ class CreateMember(LoginRequiredMixin, SuccessMessageMixin, View):
         TournamentMember(person_id=application.person.id, tournament_id=application.tournament.id).save()
         TournamentApplication(pk=application.id).delete()
 
-        return HttpResponseRedirect('/tournaments')
+        url = reverse_lazy('detail_tournament_application', kwargs={'pk': application.tournament.id})
+        return HttpResponseRedirect(url)
 
-    success_message = 'Pomyślnie dołączono do turnieju'
+    success_message = 'Pomyślnie dodano osobę do turnieju'
 
     def dispatch(self, request, *args, **kwargs):
         messages.success(self.request, self.success_message)
         return super(CreateMember, self).dispatch(request, *args, **kwargs)
+
+
+class AddMembersView(LoginRequiredMixin, SuccessMessageMixin, View):
+    def get(self, request, pk):
+        applications = TournamentApplication.objects.filter(tournament_id=pk)
+
+        for application in applications:
+            TournamentMember(person_id=application.person.id, tournament_id=pk).save()
+            TournamentApplication(pk=application.id).delete()
+
+        url = reverse_lazy('detail_tournament_application', kwargs={'pk': pk})
+        return HttpResponseRedirect(url)
+
+    success_message = 'Pomyślnie dodano wszystkich do turnieju'
+
+    def dispatch(self, request, *args, **kwargs):
+        messages.success(self.request, self.success_message)
+        return super(AddMembersView, self).dispatch(request, *args, **kwargs)
 
 
 class DeleteMember(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
@@ -144,6 +188,8 @@ class RoundView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         context['matches'] = Match.objects.filter(round__tournament__id=self.kwargs['tournament_id'],
                                                   round=self.kwargs['pk'])
         context['round_number'] = Round.objects.get(id=self.kwargs['pk']).round
+        context['tournament'] = Tournament.objects.get(id=self.kwargs['tournament_id'])
+
         return context
 
     """
@@ -187,3 +233,23 @@ class UpdateMatch(LoginRequiredMixin, UpdateView):
     template_name = 'tournaments/match_result.html'
     fields = ('white_result', 'black_result')
     success_url = reverse_lazy('home_tournaments')
+
+
+class PlacementView(LoginRequiredMixin, DetailView):
+    model = Tournament
+    template_name = 'tournaments/placement.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        def none_sorter(person):
+            if person.fide:
+                return person.fide.classic
+            return 0
+
+        context['members'] = sorted(TournamentMember.objects.filter(tournament=self.object.id),
+                                    key=lambda x: (none_sorter(x.person), x.person.get_polish_rating()), reverse=True)
+        members_id = [item.person.id for item in context['members']]
+        context['fide'] = FideRating.objects.filter(person_id__in=members_id)
+
+        return context

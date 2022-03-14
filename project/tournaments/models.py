@@ -1,7 +1,9 @@
 import datetime
 from chessAPI import settings
 import model_helpers
-from addresses.models import *
+from addresses.models import Address
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 GAME_TYPE_CHOICES = [
@@ -15,53 +17,6 @@ GAME_SYSTEM_CHOICES = [
     ('kołowy(rundowy)', 'kołowy(rundowy)'),
     ('arena', 'arena'),
 ]
-
-
-TITLE_CHOICES = [
-    ('b/k', 'b/k'),
-    ('V', 'V'),
-    ('IV', 'IV'),
-    ('III', 'III'),
-    ('II', 'II'),
-    ('II+', 'II+'),
-    ('I', 'I'),
-    ('I+', 'I+'),
-    ('I++', 'I++'),
-    ('k', 'k'),
-    ('m', 'm'),
-]
-
-
-MALE_TITLES = {'b/k': 1000,
-               'V': 1200,
-               'IV': 1400,
-               'III': 1600,
-               'II': 1800,
-               'II+': 1900,
-               'I': 2000,
-               'I+': 2100,
-               'I++': 2100,
-               'k': 2200,
-               'k+': 2300,
-               'k++': 2300,
-               'm': 2400,
-               }
-
-
-FEMALE_TITLES = {'b/k': 1000,
-               'V': 1100,
-               'IV': 1250,
-               'III': 1400,
-               'II': 1600,
-               'II+': 1700,
-               'I': 1800,
-               'I+': 1900,
-               'I++': 1900,
-               'k': 2000,
-               'k+': 2100,
-               'k++': 2100,
-               'm': 2200,
-               }
 
 
 class Tournament(models.Model):
@@ -87,11 +42,14 @@ class Tournament(models.Model):
 
     def status(self):
         if datetime.date.today() < self.start:
-            return '#00aa00'  # coming soon
+            return 'coming soon'
         elif datetime.date.today() > self.end:
-            return '#ff0000'  # completed
-        else:
-            return '#0000ff'  # active
+            return 'ended'
+        return 'ongoing'
+
+    def color_status(self):
+        colors = {'ongoing': '#0000bb', 'ended': '#bb0000', 'coming soon': '#00bb00'}
+        return colors[self.status()]
 
 
 class TournamentMember(models.Model):
@@ -112,9 +70,9 @@ class Round(models.Model):
 class Match(models.Model):
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
     chessboard = models.IntegerField()
-    # players
+
     white = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='match_white')
     black = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='match_black')
-    # results
+
     white_result = models.CharField(max_length=20, default='', blank=True)
     black_result = models.CharField(max_length=20, default='', blank=True)

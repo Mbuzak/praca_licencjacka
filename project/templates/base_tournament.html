@@ -22,28 +22,22 @@
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">{{user.name}}</a>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <a href="{% url "profile" user.id %}" class="dropdown-item"><i class="fa fa-user-circle-o"></i>
-                            Profil</a>
+                            <a href="{% url 'profile' user.id %}" class="dropdown-item"><i class="fa fa-user-circle-o"></i>Profil</a>
 <!--                        change password url-->
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "home_tournaments" %}" class="dropdown-item"><i class="fa fa-trophy"></i>
-                            Turnieje</a>
+                            <a href="{% url 'home_tournaments' %}" class="dropdown-item"><i class="fa fa-trophy"></i>Turnieje</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "home_club" %}" class="dropdown-item"><i class="fa fa-puzzle-piece"></i>
-                            Kluby</a>
+                            <a href="{% url 'home_club' %}" class="dropdown-item"><i class="fa fa-puzzle-piece"></i>Kluby</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "home_accounts" %}" class="dropdown-item"><i class="fa fa-users"></i>
-                            Użytkownicy</a>
+                            <a href="{% url 'home_accounts' %}" class="dropdown-item"><i class="fa fa-users"></i>Użytkownicy</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "logout" %}" class="dropdown-item"><i class="fa fa-sign-out"></i>
-                            Wyloguj</a>
-                        </>
+                            <a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-sign-out"></i>Wyloguj</a>
+                        </div>
                     </li>
                 </ul>
             </div>
         {% endif %}
     </nav>
-
 
     <div class="container">
         {% if messages %}
@@ -56,6 +50,17 @@
                 </div>
             {% endfor %}
         {% endif %}
+
+        <p class="a">{{ tournament.name }}</p>
+        {% block description %} {% endblock description %}
+
+        <div style="margin-bottom: 20px;">
+            <a href="{% url 'detail_tournament' tournament.id %}">Strona domowa</a>
+            <a href="{% url 'tournaments_placement' tournament.id %}">Punktacja</a>
+            <a href="{% url 'tournament_members' tournament.id %}">Lista startowa</a>
+            <a href="{% url 'detail_tournament_application' tournament.id %}">Zgłoszenia</a>
+            <a href="{% url 'detail_tournament' tournament.id %}">Statystyka</a>
+        </div>
 
         {% block content %} {% endblock %}
     </div>

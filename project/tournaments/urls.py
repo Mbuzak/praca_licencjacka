@@ -8,6 +8,7 @@ urlpatterns = [
     path('update/<int:pk>/', UpdateTournament.as_view(), name='update_tournament'),
     path('delete/<int:pk>/', DeleteTournament.as_view(), name='delete_tournament'),
     path('<int:application_id>/join/', CreateMember.as_view(), name='create_tournament_member'),
+    path('<int:pk>/join-all/', AddMembersView.as_view(), name='create_tournament_members'),
     path('<int:pk>/leave/', DeleteMember.as_view(), name='leave_tournament'),
     path('<int:pk>/application/create', CreateApplication.as_view(), name='create_tournament_application'),
     path('<int:pk>/application/', IndexApplication.as_view(), name='detail_tournament_application'),
@@ -19,4 +20,6 @@ urlpatterns = [
     path('<int:tournament_id>/round/<int:pk>/result/', UpdateMatch.as_view(), name='update_match'),
     # members
     path('<int:pk>/members', MembersView.as_view(), name='tournament_members'),
+    path('<int:pk>/members/<int:member_id>', ProfileView.as_view(), name='tournament_profile'),
+    path('<int:pk>/placement/', PlacementView.as_view(), name='tournaments_placement'),
 ]

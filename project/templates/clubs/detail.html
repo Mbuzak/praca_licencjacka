@@ -4,7 +4,6 @@
 {% block content %}
 <a href="/clubs/{{ club.id }}/application">Zgłoszenie do klubu</a> <br>
 
-
 {% if is_member %}
     {% for i in is_member %}
         <form method="post" action="{% url 'leave_club' i.id %}">
@@ -18,36 +17,33 @@
     {% endfor %}
 {% endif %}
 
+<p class="a">{{ club.name }}</p>
+<p>Klub</p>
 
-
-<h1>Informacje podstawowe</h1>
-<p>Nazwa: {{ club.name }} <br>
-Kontakt: {{ club.email }} <br>
-Województwo: {{ club.address.province }} <br>
-Miasto: {{ club.address.city }} <br>
-Ulica: {{ club.address.street }}, {{ club.address.house_number }} <br>
-Menadżer: {{ club.manager }} <br>
-Data rejestracji: {{ club.registration|date:"d-m-Y" }} <br>
+<p class="b">Kontakt</p>
+<p class="c">
+    <i class="fa fa-map-marker"></i>
+    {{ club.address.city }}, ul. {{ club.address.street }}
 </p>
+<p>{{ club.email }}</p>
 
-<h1>Członkowie klubu</h1>
+<p class="b">Menadżer</p>
+<p>{{ club.manager }}</p>
+
+<p class="b">Data rejestracji</p>
+<p>{{ club.registration|date:"d.m.Y" }}</p>
+
+<p class="a">Członkowie klubu</p>
+
 {% for member in members %}
-<p>{{ member.person }}</p>
+    <p>{{ member.person }}</p>
 {% endfor %}
 
+<form action="{% url 'update_club' club.id %}" method="get">
+    <button type="submit" class="btn btn-primary">Edycja klubu</button>
+</form>
 
-<div class="inner">
-    <form action="{% url 'update_club' club.id %}" method="get">
-        {% csrf_token %}
-        <button type="submit" class="button" id="blue-button">Aktualizuj klub</button>
-    </form>
-</div>
-
-<div class="inner">
-    <form action="{% url 'delete_club' club.id %}" method="get">
-        {% csrf_token %}
-        <button type="submit" class="button" id="red-button">Usuń klub</button>
-    </form>
-</div>
-
+<form action="{% url 'delete_club' club.id %}" method="get">
+    <button type="submit" class="btn btn-danger">Usuń klub</button>
+</form>
 {% endblock content %}

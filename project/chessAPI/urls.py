@@ -24,6 +24,7 @@ urlpatterns = [
     path('tournaments/', include('tournaments.urls')),
     path('clubs/', include('clubs.urls')),
     path('accounts/', include('accounts.urls')),
+    path('ratings/', include('ratings.urls')),
     path('home/', TemplateView.as_view(template_name='home.html')),
 
     # path('password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
