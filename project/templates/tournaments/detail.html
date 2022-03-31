@@ -18,12 +18,18 @@
         <i class="fa fa-calendar"></i>
         {{ tournament.start|date:"d.m.Y" }} - {{ tournament.end|date:"d.m.Y" }}
     </p>
-    <p>
+    <p class="c">
         <i class="fa fa-map-marker"></i>
-        {{ tournament.address.city }}, ul. {{ tournament.address.street }} {{ tournament.address.house_number }}
+        {{ tournament.address.city }}, ul. {{ tournament.address.street }}
     </p>
-    <p class="b">Organizator</p>
-    <p>{{ tournament.organizer }}</p>
+
+    <p>
+        <i class="fa fa-map"></i>
+        {{ tournament.organizer }}
+    </p>
+
+    <p class="b inline">Sędzia</p>&nbsp;&nbsp;
+    <p class="inline">{{ tournament.judge  }}</p>
 </div>
 
 <div class="info-block1">
@@ -46,12 +52,14 @@
 
         <tr>
             <th>Liczba rund</th>
-            <td style="padding-left: 30px;">{{ tournament.round_count }}</td>
+            <td style="padding-left: 30px;">
+                {{ tournament.round_number }}
+                {% if tournament.round_number != round_count and round_count > 1 and not tournament.is_started and user.id == tournament.judge.id %}
+                    <p style="color: #aa0000;" class="inline">(sugerowana ilość rund: {{ round_count }})</p>
+                {% endif %}
+            </td>
         </tr>
     </table>
-
-    <p class="b">Sędzia</p>
-    <p>{{ tournament.judge  }}</p>
 </div>
 
 <div class="clear-float"></div>
@@ -59,23 +67,52 @@
 {% if is_member %}
     {% for i in is_member %}
         <form method="get" action="{% url 'leave_tournament' i.id %}">
-           {% csrf_token %}
-            <button class="button" id="red-button" type="sumbit">Opuść</button>
+            <button type="submit" class="btn btn-danger">Opuść</button>
         </form>
     {% endfor %}
 {% endif %}
-
 {% if tournament.judge.id == user.id %}
-    <form method="get" action="{% url 'create_round' tournament.id %}">
-        <button type="submit" class="btn btn-success">Nowa runda</button>
-    </form>
+    {% if tournament.is_started %}
+        {% if not tournament.is_ended %}
+            {% if tournament.round_number == last_round.round %}
+                <form method="get" action="{% url 'tournaments_end_tournament' tournament.id %}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Zakończ turniej</button>
+                </form>
+            {% else %}
+                <form method="post" action="{% url 'create_round' tournament.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button class="btn btn-success confirm-create-round">Nowa runda</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    {% else %}
+        <form method="post" action="{% url 'tournaments_begin_tournament' tournament.id %}" style="display: inline;">
+            {% csrf_token %}
+            <button class="btn btn-primary confirm-begin-tournament">Rozpocznij turniej</button>
+        </form>
 
-    <form method="get" action="{% url 'update_tournament' tournament.id %}">
-        <button type="submit" class="btn btn-primary">Edycja</button>
-    </form>
+        <form method="get" action="{% url 'update_tournament' tournament.id %}" style="display: inline;">
+            <button style="display: inline-block;" type="submit" class="btn btn-primary">Edycja</button>
+        </form>
 
-    <form action="{% url 'delete_tournament' tournament.id %}" method="get">
-        <button type="submit" class="btn btn-danger">Usuń</button>
-    </form>
+        <form method="post" action="{% url 'delete_tournament' tournament.id %}" style="display: inline;">
+            {% csrf_token %}
+            <button class="btn btn-danger confirm-delete-tournament">Usuń</button>
+        </form>
+    {% endif %}
 {% endif %}
+
+<script>
+    $(document).on('click', '.confirm-delete-tournament', function(){
+        return confirm("Czy na pewno chcesz usunąć turniej");
+    })
+
+    $(document).on('click', '.confirm-begin-tournament', function(){
+        return confirm("Czy na pewno chcesz rozpocząć turniej\n\n1. Zostanie wygenerowana pierwsza runda\n2. Sędzia może tworzyć nowe rundy\n3. Nie będzie możliwości dołączania nowych zawodników\n4. Lista zgłoszeń zostanie wyczyszczona\n5. Zostanie przypisana liczba rund");
+    })
+
+    $(document).on('click', '.confirm-create-round', function(){
+        return confirm("Czy na pewno chcesz dodać nową rundę\n\n1. Zostaną wygenerowane partie szachowe");
+    })
+</script>
 {% endblock content %}

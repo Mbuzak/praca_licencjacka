@@ -2,7 +2,8 @@
 
 
 {% block description %}
-<p>{{ member.person }} {{ member.person.category }}</p>
+<p class="inline">{{ member.person }}</p>
+<p class="chess-title inline">{{ member.person.get_category }}</p>
 {% endblock description %}
 
 {% block content %}
@@ -71,27 +72,33 @@
     </table>
 </div>
 
+{% for match in matches %}
+        {% if match.white.id == member.person.id %}
+        {% else %}
+        {% endif %}
+    {% endfor %}
+
 <script>
-    let result = 0;
-    let ratings = 0;
-    let progress_rating = 0;
-    let match_count = 0;
+    var result = 0;
+    var ratings = 0;
+    var match_count = 0;
+    var progress_rating;
 
     {% for match in matches %}
         match_count++;
         {% if match.white.id == member.person.id %}
-            result += {{ match.white_result }};
+            result += {{ match.white_result }}
             ratings += {{ match.black.get_polish_rating }}
         {% else %}
-            result += {{ match.black_result }};
+            result += {{ match.black_result }}
             ratings += {{ match.white.get_polish_rating }}
         {% endif %}
     {% endfor %}
-    progress_rating = 1/(1+match_count) * (ratings + {{ member.person.get_polish_rating }} + 400 * (2 * result - match_count));
+    progress_rating = 1/(1+match_count) * (ratings + {{ member.person.get_polish_rating }} + 400 * (2 * result - match_count))
 
-    document.getElementById("result").innerHTML = result;
-    document.getElementById("average_rating").innerHTML = ratings
+    document.getElementById("result").innerHTML = result
+    document.getElementById("average_rating").innerHTML = ratings/match_count
     document.getElementById("match_count").innerHTML = match_count
-    document.getElementById("progress_rating").innerHTML = progress_rating
+    document.getElementById("progress_rating").innerHTML = Math.round(progress_rating)
 </script>
 {% endblock content %}

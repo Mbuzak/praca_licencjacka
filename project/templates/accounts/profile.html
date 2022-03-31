@@ -2,19 +2,15 @@
 
 
 {% block content %}
-<p class="a">{{ account }} {{ account.category }}</p>
+<p class="a">{{ account }} {{ account.get_category }}</p>
 <p>Profil użytkownika</p>
-<p class="c">{{ account.get_id_cr }}</p>
+<hr style="width: 30%; text-align: left; margin-left: 0; height: 2px; color: #9e9e9e; background-color: #9e9e9e;">
 
 <i class="fa fa-map-marker"></i>
-{{ account.country }}
-{% if city %}
-    , {{ account.city }}
-{% endif %}
-
-{% if province %}
-    <div>{{ account.province }}<p>(WZSzach)</p></div>
-{% endif %}
+{{ account.province }}
+<p class="b">Obecne punkty: {{ account.get_polish_rating }}</p>
+<p class="b">Następny próg punktowy: {{ account.next_threshold }}</p>
+<p class="b">Następna kategoria: {{ account.next_category }}</p>
 
 <p style="font-size: 24px; padding-top: 20px;">Ranking FIDE</p>
 <p style="font-size: 14px;">{{ account.fide_number|default_if_none:"" }}</p>

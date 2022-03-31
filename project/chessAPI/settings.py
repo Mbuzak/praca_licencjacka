@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'clubs.apps.ClubsConfig',
     'ratings.apps.RatingsConfig',
     'addresses.apps.AddressesConfig',
+    'joinment.apps.JoinmentConfig',
 
     # crispy form
     'crispy_forms',

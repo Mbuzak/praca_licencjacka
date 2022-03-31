@@ -2,11 +2,10 @@
 
 
 {% block content %}
-	<form method="post">
-		<p style="font-size: 22px;">
-		    Czy jesteś pewnien że chcesz opuścić {{ tournamentmember.tournament }}? <br>
-		</p>
-		{% csrf_token %}
-		<button type="sumbit" class="button" id="red-button">Tak, opuść</button>
-	</form>
+<form method="post">
+	<p class="a">{{ tournamentmember.tournament }}</p>
+	<p class="b">Czy jesteś pewnien że chcesz opuścić ten turniej</p>
+	{% csrf_token %}
+	<button type="submit" class="btn btn-danger">Opuść</button>
+</form>
 {% endblock content %}

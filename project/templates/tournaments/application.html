@@ -6,12 +6,10 @@
 {% endblock description %}
 
 {% block content %}
-{% if not has_application and tournament.judge.id != user.id and not is_member %}
-    <form method="get" action="{% url 'create_tournament_application' tournament.id %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Zapisz się</button>
-    </form>
-{% endif %}
+<form method="post" action="{% url 'create_tournament_application' tournament.id %}">
+    {% csrf_token %}
+    <button{% if has_application or tournament.judge.id == user.id or is_member or tournament.is_started %} disabled {% endif %} type="submit" class="btn btn-primary">Zapisz się</button>
+</form>
 
 {% if user.id == tournament.judge.id %}
     <form method="get" class="form-inline" action="{% url 'create_tournament_members' tournament.id %}">
@@ -46,10 +44,12 @@
         </div>
         <div>{{ application.person.get_polish_rating }}</div>
         {% if tournament.judge.id == user.id %}
-            <form method="get" action="{% url 'create_tournament_member' application_id=application.id %}">
+            <form method="post" action="{% url 'create_tournament_member' application_id=application.id %}">
+                {% csrf_token %}
                 <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i></button>
             </form>
             <form method="post" action="{% url 'delete_tournament_application' application.id %}">
+                {% csrf_token %}
                 <button type="submit" class="btn btn-danger"><i class="fa fa-minus"></i></button>
             </form>
         {% endif %}

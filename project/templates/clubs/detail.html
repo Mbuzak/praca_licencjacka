@@ -2,30 +2,29 @@
 
 
 {% block content %}
-<a href="/clubs/{{ club.id }}/application">Zgłoszenie do klubu</a> <br>
-
-{% if is_member %}
-    {% for i in is_member %}
-        <form method="post" action="{% url 'leave_club' i.id %}">
-           {% csrf_token %}
-            <button class="button" id="red-button" type="sumbit">Opuść</button>
-        </form>
-        <form method="post" action="{% url 'leave_club2' i.id %}">
-           {% csrf_token %}
-            <button class="button" id="red-button" type="sumbit">Opuść2</button>
-        </form>
-    {% endfor %}
-{% endif %}
-
 <p class="a">{{ club.name }}</p>
 <p>Klub</p>
+
+{% if is_member %}
+    <form method="post" action="{% url 'clubs_member_leave' club.id user.id %}">
+        {% csrf_token %}
+        <button class="btn btn-danger confirm-delete">Opuść</button>
+    </form>
+{% endif %}
+
+<div>
+    <a href="{% url 'detail_club_application' club.id %}">Zgłoszenie do klubu</a>
+</div>
 
 <p class="b">Kontakt</p>
 <p class="c">
     <i class="fa fa-map-marker"></i>
     {{ club.address.city }}, ul. {{ club.address.street }}
 </p>
-<p>{{ club.email }}</p>
+<p>
+    <i class="fa fa-envelope"></i>
+    {{ club.email }}
+</p>
 
 <p class="b">Menadżer</p>
 <p>{{ club.manager }}</p>
@@ -35,15 +34,44 @@
 
 <p class="a">Członkowie klubu</p>
 
-{% for member in members %}
-    <p>{{ member.person }}</p>
-{% endfor %}
+<div class="list-display">
+    <div>Numer</div>
+    <div>Imię Nazwisko</div>
+    <div>WZSzach</div>
+    <div>Miasto</div>
+    <div>Kategoria</div>
+    <div>FIDE</div>
 
-<form action="{% url 'update_club' club.id %}" method="get">
-    <button type="submit" class="btn btn-primary">Edycja klubu</button>
-</form>
+    <div class="row-border"></div>
+    {% for member in members %}
+        <div>{{ forloop.counter }}</div>
+        <div>{{ member }}</div>
+        <div>{{ member.province }}</div>
+        <div>{{ member.city }}</div>
+        <div>{{ member.category }}</div>
+        <div></div>
+        <div class="row-border"></div>
+    {% endfor %}
+</div>
 
-<form action="{% url 'delete_club' club.id %}" method="get">
-    <button type="submit" class="btn btn-danger">Usuń klub</button>
-</form>
+{% if user.id == club.manager.id %}
+    <form action="{% url 'update_club' club.id %}" method="get">
+        <button type="submit" class="btn btn-primary">Edycja klubu</button>
+    </form>
+
+    <form action="{% url 'delete_club' club.id %}" method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger confirm-delete-club">Usuń klub</button>
+    </form>
+{% endif %}
+
+<script>
+    $(document).on('click', '.confirm-delete', function(){
+        return confirm("Czy na pewno chcesz opuścić klub");
+    })
+
+    $(document).on('click', '.confirm-delete-club', function(){
+        return confirm("Czy na pewno chcesz usunąć klub");
+    })
+</script>
 {% endblock content %}

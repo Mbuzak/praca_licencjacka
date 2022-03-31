@@ -2,8 +2,13 @@
 
 
 {% block content %}
-<form action="{% url 'create_tournament' %}" method="get">
+<p class="a">Turnieje</p>
+
+<form style="display: inline;" action="{% url 'create_tournament' %}" method="get">
     <button type="submit" class="btn btn-primary">Nowy turniej</button>
+</form>
+<form style="display: inline;" action="{% url 'addresses_create_address' %}" method="get">
+    <button type="submit" class="btn btn-primary">Nowy adres</button>
 </form>
 
 {% if object_list %}
@@ -11,7 +16,7 @@
         <tr>
             <th>Termin</th>
             <th>Nazwa</th>
-            <th>Adres</th>
+            <th>Miasto</th>
             <th>Rodzaj</th>
             <th>Turniej FIDE</th>
         </tr>
@@ -22,7 +27,7 @@
                     <p style="color: {{ tournament.color_status }}; line-height: 0.5; font-size: 12px;">{{ tournament.end|date:"d-m-Y" }}</p>
                 </td>
                 <td><a href="{% url 'detail_tournament' tournament.id %}">{{ tournament.name }}</a></td>
-                <td>{{ tournament.address.province }}, {{ tournament.address.city }}</td>
+                <td>{{ tournament.address.city }}</td>
                 <td>{{ tournament.game_type }}</td>
                 <td>{{ tournament.is_fide|yesno:"FIDE, " }}</td>
             </tr>

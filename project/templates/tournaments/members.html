@@ -10,10 +10,8 @@
     <tr>
         <th>Nr</th>
         <th>Nr FIDE</th>
-        <th>Id-cr</th>
         <th>Tytuł</th>
         <th>Imię Nazwisko</th>
-        <th>Państwo</th>
         <th>FIDE</th>
         <th>Ranking</th>
         <th>Klub</th>
@@ -23,10 +21,8 @@
         <tr>
             <td>{{ forloop.counter }}</td>
             <td>{{ member.person.get_fide_number }}</td>
-            <td>{{ member.person.id }}</td>
             <td>{{ member.person.get_category }}</td>
             <td><a href="{% url 'tournament_profile' tournament.id member.person.id %}">{{ member.person }}</a></td>
-            <td>{{ member.person.country }}</td>
             <td>
                 {% if tournament.game_type == "classic" %}
                     {{ member.person.fide.classic }}

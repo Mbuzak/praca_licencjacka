@@ -61,7 +61,6 @@ a {
 
 #tournaments td, #tournaments th {
 	padding: 6px 20px;
-
 }
 
 #tournaments tr:nth-child(even) {
@@ -72,9 +71,9 @@ a {
 #tournaments th {
   padding-top: 12px;
   padding-bottom: 12px;
-  text-align: left;
   background-color: #2BA2F4;
   color: white;
+  text-align: center;
 }
 
 .button {
@@ -151,4 +150,15 @@ footer {
     margin-left: 20px;
 }
 
+p.inline {
+    display: inline;
+}
 
+p.chess-title {
+    font-size: 20px;
+    font-family: Copperplate;
+}
+
+.inline {
+    display: inline-block;
+}

@@ -1,16 +1,16 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.db.models import Max, F, Min
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, View
 from .models import *
-from .forms import *
+from .forms import TournamentForm
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
-from ratings.models import PolishRating
-from django.db.models import Q
 from ratings.models import FideRating
+from .pairing_system import create_pairing, create_round, get_fide_rating, update_results, round_count, update_categories
+from joinment.models import Application
 
 
 class IndexView(ListView):
@@ -26,9 +26,12 @@ class DetailTournament(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tournament'] = Tournament.objects.get(pk=self.object.id)
-        context['is_member'] = TournamentMember.objects.all().filter(person=self.request.user.id, tournament=self.object.id)
+        context['is_member'] = TournamentMember.objects.filter(person=self.request.user.id, tournament=self.object.id)
         context['rounds'] = Round.objects.filter(tournament_id=self.object.id).values('id', 'round')
+        context['round_count'] = round_count(self.object.id)
+        context['last_round'] = False
+        if context['rounds']:
+            context['last_round'] = Round.objects.filter(tournament_id=self.object.id).latest('round')
         return context
 
 
@@ -38,16 +41,11 @@ class MembersView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        def none_sorter(person):
-            if person.fide:
-                return person.fide.classic
-            return 0
-
-        context['members'] = sorted(TournamentMember.objects.filter(tournament=self.object.id), key=lambda x: (none_sorter(x.person), x.person.get_polish_rating()), reverse=True)
+        context['members'] = sorted(TournamentMember.objects.filter(tournament=self.object.id),
+                                    key=lambda x: (get_fide_rating(x.person.id, self.object.game_type),
+                                                   x.person.get_polish_rating()), reverse=True)
         members_id = [item.person.id for item in context['members']]
         context['fide'] = FideRating.objects.filter(person_id__in=members_id)
-
         return context
 
 
@@ -57,17 +55,15 @@ class ProfileView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tournament_name'] = Tournament.objects.get(id=self.object.id)
-        context['member'] = TournamentMember.objects.get(tournament_id=self.object.id,
-                                                         person_id=self.kwargs['member_id'])
-        context['matches'] = Match.objects.filter(Q(white_id=self.kwargs['member_id']) | Q(black_id=self.kwargs['member_id']))
-
+        context['member'] = TournamentMember.objects.get(tournament_id=self.object.id, person_id=self.kwargs['member_id'])
+        rounds = [item.id for item in Round.objects.filter(tournament_id=self.kwargs['pk'])]
+        context['matches'] = Match.objects.filter(Q(white_id=self.kwargs['member_id']) |
+                                                  Q(black_id=self.kwargs['member_id']), round_id__in=rounds)
         return context
 
 
 class CreateTournament(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     form_class = TournamentForm
-
     template_name = 'tournaments/create.html'
     success_url = reverse_lazy('home_tournaments')
 
@@ -77,10 +73,10 @@ class CreateTournament(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 class UpdateTournament(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Tournament
-    fields = ('name', 'start', 'end')
+    fields = ('name', 'start', 'end', 'address', 'round_number')
     template_name = 'tournaments/update.html'
 
-    def get_success_url(self, **kwargs):
+    def get_success_url(self):
         return reverse_lazy('detail_tournament', kwargs={'pk': self.kwargs['pk']})
 
     def get_success_message(self, cleaned_data):
@@ -89,7 +85,6 @@ class UpdateTournament(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
 class DeleteTournament(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Tournament
-    template_name = 'tournaments/delete.html'
     success_url = reverse_lazy('home_tournaments')
     success_message = '%(name)s został pomyślnie usunięty'
 
@@ -98,29 +93,23 @@ class DeleteTournament(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return super(DeleteTournament, self).delete(request, *args, **kwargs)
 
 
-class CreateMember(LoginRequiredMixin, SuccessMessageMixin, View):
-    def get(self, request, application_id):
-        application = TournamentApplication.objects.get(pk=application_id)
+class CreateMember(LoginRequiredMixin, View):
+    def post(self, request, application_id):
+        application = Application.objects.get(pk=application_id)
         TournamentMember(person_id=application.person.id, tournament_id=application.tournament.id).save()
-        TournamentApplication(pk=application.id).delete()
+        Application(pk=application.id).delete()
 
         url = reverse_lazy('detail_tournament_application', kwargs={'pk': application.tournament.id})
         return HttpResponseRedirect(url)
 
-    success_message = 'Pomyślnie dodano osobę do turnieju'
-
-    def dispatch(self, request, *args, **kwargs):
-        messages.success(self.request, self.success_message)
-        return super(CreateMember, self).dispatch(request, *args, **kwargs)
-
 
 class AddMembersView(LoginRequiredMixin, SuccessMessageMixin, View):
     def get(self, request, pk):
-        applications = TournamentApplication.objects.filter(tournament_id=pk)
+        applications = Application.objects.filter(tournament_id=pk)
 
         for application in applications:
             TournamentMember(person_id=application.person.id, tournament_id=pk).save()
-            TournamentApplication(pk=application.id).delete()
+            Application(pk=application.id).delete()
 
         url = reverse_lazy('detail_tournament_application', kwargs={'pk': pk})
         return HttpResponseRedirect(url)
@@ -143,42 +132,6 @@ class DeleteMember(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return super(DeleteMember, self).delete(request, *args, **kwargs)
 
 
-class CreateApplication(LoginRequiredMixin, SuccessMessageMixin, View):
-    def get(self, request, pk):
-        TournamentApplication(person_id=self.request.user.id, tournament_id=pk).save()
-
-        url = reverse_lazy('detail_tournament_application', kwargs={'pk': pk})
-        return HttpResponseRedirect(url)
-
-
-class IndexApplication(LoginRequiredMixin, DetailView):
-    model = Tournament
-    template_name = 'tournaments/application.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['tournament'] = Tournament.objects.get(pk=self.object.id)
-        context['applications'] = TournamentApplication.objects.filter(tournament_id=self.object.id)
-        context['has_application'] = TournamentApplication.objects.filter(person_id=self.request.user.id,
-                                                                          tournament_id=self.object.id)
-        context['is_member'] = TournamentMember.objects.filter(person_id=self.request.user.id,
-                                                               tournament_id=self.object.id)
-        return context
-
-
-class DeleteApplication(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
-    model = TournamentApplication
-    # success_message = 'Pomyślnie usunięto zgłoszenie'
-
-    #def delete(self, request, *args, **kwargs):
-    #    messages.success(self.request, self.success_message % {'name': self.get_object().tournament.name})
-    #    return super(DeleteTournamentMember, self).delete(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return reverse_lazy('detail_tournament_application', kwargs={'pk': self.object.tournament.id})
-
-
-# Matches
 class RoundView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
     model = Round
     template_name = 'tournaments/round.html'
@@ -189,40 +142,14 @@ class RoundView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
                                                   round=self.kwargs['pk'])
         context['round_number'] = Round.objects.get(id=self.kwargs['pk']).round
         context['tournament'] = Tournament.objects.get(id=self.kwargs['tournament_id'])
-
         return context
 
-    """
-    def post(self, request, **kwargs):
-        form = MatchForm(request.POST)
-        if form.is_valid():
-            # print(form.cleaned_data['white_result'])
-            match = Match.objects.get(id=self.kwargs['round_id'])
-            match.white_result = form.cleaned_data['white_result']
-            match.black_result = form.cleaned_data['black_result']
-            match.save()
-        else:
-            print('WARNING!\n\n\n')
-        # url = reverse_lazy('detail_tournament', kwargs={'pk': pk})
-        # return HttpResponseRedirect(url)
-        return HttpResponseRedirect('/tournaments/18/round/1/7') # TDB
-    """
 
-
-class CreateRound(LoginRequiredMixin, SuccessMessageMixin, View):
-    def get(self, request, pk):
-        def set_round():
-            if Round.objects.filter(tournament_id=pk):
-                return Round.objects.filter(tournament_id=pk).aggregate(Max('round'))['round__max'] + 1
-            return 1
-
-        Round(tournament_id=pk, round=set_round()).save()
-
-        """ There will be generate matches logic
-        players = TournamentMember.objects.filter(tournament_id=pk)
-        Match(tournament_id=kwargs['pk'], white=players[0].person, black=players[1].person, round=set_round(),
-              chessboard=1).save()
-        """
+class CreateRound(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        update_results(pk)
+        create_round(pk)
+        create_pairing(pk)
 
         url = reverse_lazy('detail_tournament', kwargs={'pk': pk})
         return HttpResponseRedirect(url)
@@ -234,6 +161,10 @@ class UpdateMatch(LoginRequiredMixin, UpdateView):
     fields = ('white_result', 'black_result')
     success_url = reverse_lazy('home_tournaments')
 
+    def get_success_url(self):
+        return reverse_lazy('detail_round',
+                            kwargs={'tournament_id': self.kwargs['tournament_id'], 'pk': self.kwargs['round_id']})
+
 
 class PlacementView(LoginRequiredMixin, DetailView):
     model = Tournament
@@ -241,15 +172,81 @@ class PlacementView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        def none_sorter(person):
-            if person.fide:
-                return person.fide.classic
-            return 0
-
         context['members'] = sorted(TournamentMember.objects.filter(tournament=self.object.id),
-                                    key=lambda x: (none_sorter(x.person), x.person.get_polish_rating()), reverse=True)
+                                    key=lambda x: (x.points, get_fide_rating(x.person.id, self.object.game_type),
+                                                   x.person.get_polish_rating()), reverse=True)
         members_id = [item.person.id for item in context['members']]
         context['fide'] = FideRating.objects.filter(person_id__in=members_id)
-
         return context
+
+
+class StatisticsView(LoginRequiredMixin, DetailView):
+    model = Tournament
+    template_name = 'tournaments/statistics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['members'] = TournamentMember.objects.filter(tournament_id=self.kwargs['pk'])
+        return context
+
+
+class StartTournamentView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        tournament = Tournament.objects.get(pk=pk)
+        tournament.is_started = True
+        tournament.save()
+
+        # create first round
+        Round(tournament_id=pk, round=1).save()
+
+        create_pairing(pk)
+
+        # delete rest of applications
+        Application.objects.filter(type_of_object='T', tournament_id=pk).delete()
+
+        url = reverse_lazy('detail_tournament', kwargs={'pk': pk})
+        return HttpResponseRedirect(url)
+
+
+class EndTournamentView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        tournament = Tournament.objects.get(pk=self.kwargs['pk'])
+        tournament.is_ended = True
+        tournament.save()
+
+        update_results(pk)
+
+        update_categories(self.object)
+
+        url = reverse_lazy('detail_tournament', kwargs={'pk': pk})
+        return HttpResponseRedirect(url)
+
+
+class CreateApplication(LoginRequiredMixin, SuccessMessageMixin, View):
+    def post(self, request, pk):
+        Application(person_id=self.request.user.id, tournament_id=pk, type_of_object='T').save()
+
+        url = reverse_lazy('detail_tournament_application', kwargs={'pk': pk})
+        return HttpResponseRedirect(url)
+
+
+class IndexApplication(LoginRequiredMixin, DetailView):
+    model = Tournament
+    template_name = 'tournaments/application.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['applications'] = Application.objects.filter(tournament_id=self.object.id)
+        context['has_application'] = Application.objects.filter(person_id=self.request.user.id,
+                                                                          tournament_id=self.object.id)
+        context['is_member'] = TournamentMember.objects.filter(person_id=self.request.user.id,
+                                                               tournament_id=self.object.id)
+        return context
+
+
+class DeleteApplication(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+    model = Application
+
+    def get_success_url(self):
+        return reverse_lazy('detail_tournament_application', kwargs={'pk': self.object.tournament.id})
+

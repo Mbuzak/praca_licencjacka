@@ -9,8 +9,8 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ('email', 'name', 'lastname', 'born_year')
     list_filter = ()
     fieldsets = [
-        (None, {'fields': ('email', 'name', 'lastname', 'gender', 'born_year')}),
-        ('Address', {'fields': ('country', 'province', 'city')}),
+        (None, {'fields': ('email', 'name', 'lastname', 'gender', 'born_year', 'club')}),
+        ('Address', {'fields': ('province',)}),
         ('Title', {'fields': ('category', 'fide_number', 'fide')})
     ]
 

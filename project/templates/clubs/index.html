@@ -13,8 +13,11 @@
     {% endfor %}
 {% endif %}
 
-<form action="{% url 'create_club' %}" method="get">
+<form style="display: inline;" action="{% url 'create_club' %}" method="get">
     <button type="submit" class="btn btn-primary">Nowy klub</button>
+</form>
+<form style="display: inline;" action="{% url 'addresses_create_address' %}" method="get">
+    <button type="submit" class="btn btn-primary">Nowy adres</button>
 </form>
 
 {% if object_list %}

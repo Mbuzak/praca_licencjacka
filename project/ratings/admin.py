@@ -2,15 +2,6 @@ from django.contrib import admin
 from .models import *
 
 
-class PolishRatingAdmin(admin.ModelAdmin):
-    fieldsets = (
-        (None, {'fields': ['name', 'person', 'obtain', 'tournament']}),
-    )
-
-    list_filter = ['name']
-    list_display = ['name', 'person', 'obtain', 'tournament']
-
-
 class FideRatingAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Osoba', {'fields': ['person']}),
@@ -41,7 +32,6 @@ class FideHistoryAdmin(admin.ModelAdmin):
     list_display = ['person', 'classic', 'rapid', 'blitz']
 
 
-admin.site.register(PolishRating, PolishRatingAdmin)
 admin.site.register(FideRating, FideRatingAdmin)
 admin.site.register(FideHistory, FideHistoryAdmin)
 admin.site.register(FidePeriod, FidePeriodAdmin)

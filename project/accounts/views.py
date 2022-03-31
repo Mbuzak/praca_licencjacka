@@ -3,7 +3,7 @@ from django.views.generic import DetailView, CreateView, UpdateView
 from .forms import RegisterForm
 from .models import Account
 from tournaments.models import TournamentMember
-from ratings.models import FideHistory, PolishRating
+from ratings.models import FideHistory
 from django.views.generic.list import ListView
 
 
@@ -27,7 +27,7 @@ class ProfileView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_tournaments'] = TournamentMember.objects.filter(person=self.kwargs['pk'])
-        context['titles'] = PolishRating.objects.filter(person=self.request.user)
+        #context['titles'] = PolishRating.objects.filter(person=self.request.user)
         context['fide_history'] = FideHistory.objects.filter(person_id=self.kwargs['pk'])
 
         return context

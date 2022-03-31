@@ -15,9 +15,7 @@ class RegisterForm(UserCreationForm):
             'lastname',
             'gender',
             'born_year',
-            'country',
             'province',
-            'city',
             'password1',
             'password2',
         )
@@ -29,9 +27,7 @@ class RegisterForm(UserCreationForm):
         user.lastname = self.cleaned_data['lastname']
         user.gender = self.cleaned_data['gender']
         user.born_year = self.cleaned_data['born_year']
-        user.country = self.cleaned_data['country']
         user.province = self.cleaned_data['province']
-        user.city = self.cleaned_data['city']
 
         if commit:
             user.save()
@@ -46,9 +42,7 @@ class EditProfileForm(UserChangeForm):
                   'lastname',
                   'gender',
                   'born_year',
-                  'country',
                   'province',
-                  'city',
                   'password',
                   )
 

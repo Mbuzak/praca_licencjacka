@@ -1,0 +1,94 @@
+{% extends 'base_tournament.html' %}
+
+{% block description %}
+<p>Statystyka</p>
+
+{% endblock description %}
+
+{% block content %}
+
+<div class="info-block1">
+    <canvas id="bar-chart" width="800" height="450"></canvas>
+</div>
+
+<div class="info-block1">
+    <canvas id="age-chart" width="800" height="450"></canvas>
+</div>
+
+Liczba zawodników
+<p id="people"></p>
+
+<script>
+    var people = 0;
+    var male = 0;
+    var female = 0;
+    var junior = 0;
+    var senior = 0;
+    var year = new Date().getFullYear();
+
+    {% for member in members %}
+        people += 1;
+
+        {% if member.person.gender == "M" %}
+            male += 1;
+        {% else %}
+            female += 1;
+        {% endif %}
+
+        var temp_age = year - {{ member.person.born_year }};
+
+        if (temp_age < 18) {
+            junior += 1;
+        }
+        else {
+            senior += 1;
+        }
+    {% endfor %}
+
+    document.getElementById("people").innerHTML = people;
+</script>
+
+<script>
+var x = new Chart(document.getElementById("bar-chart"), {
+    type: 'pie',
+    data: {
+      labels: ["mężczyźni", "kobiety"],
+      datasets: [
+        {
+          backgroundColor: ["#3e95cd", "#8e5ea2"],
+          data: [male,female]
+        }
+      ]
+    },
+    options: {
+      legend: { display: true },
+      title: {
+        display: true,
+        text: 'Płeć zawodnika'
+      }
+    }
+});
+</script>
+
+<script>
+var x = new Chart(document.getElementById("age-chart"), {
+    type: 'pie',
+    data: {
+      labels: ["juniorzy", "seniorzy"],
+      datasets: [
+        {
+          backgroundColor: ["#3e95cd", "#8e5ea2"],
+          data: [junior, senior]
+        }
+      ]
+    },
+    options: {
+      legend: {display: true},
+      title: {
+        display: true,
+        text: "Grupa wiekowa"
+      }
+    }
+});
+</script>
+{% endblock content %}

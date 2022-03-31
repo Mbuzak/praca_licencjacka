@@ -1,6 +1,5 @@
 from django.db import models
 from chessAPI import settings
-from tournaments.models import Tournament
 import datetime
 
 
@@ -18,6 +17,8 @@ TITLE_CHOICES = [
     ('m', 'm'),
 ]
 
+TITLE_TUPLE = ('b/k', 'V', 'IV', 'III', 'II', 'II+', 'I', 'I+', 'I++', 'k', 'm')
+
 
 TITLE = {'male': {'b/k': 1000, 'V': 1200, 'IV': 1400, 'III': 1600, 'II': 1800, 'II+': 1900, 'I': 2000, 'I+': 2100,
                   'I++': 2100, 'k': 2200, 'k+': 2300, 'k++': 2300, 'm': 2400},
@@ -25,12 +26,12 @@ TITLE = {'male': {'b/k': 1000, 'V': 1200, 'IV': 1400, 'III': 1600, 'II': 1800, '
                     'I++': 1900, 'k': 2000, 'k+': 2100, 'k++': 2100, 'm': 2200}
          }
 
-
-class PolishRating(models.Model):
-    name = models.CharField(verbose_name="Kategoria", max_length=20)
-    person = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Osoba')
-    obtain = models.DateField(verbose_name='Data zdobycia')
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, verbose_name='Turniej')
+THRESHOLD = {
+        'male': {'V': 1050, 'IV': 1300, 'III': 1550, 'II': 1800, 'II+': 1900, 'I': 2000, 'I+': 2100,
+                 'I++': 2100, 'k': 2200, 'k+': 2300, 'k++': 2300, 'm': 2400},
+        'female': {'V': 1000, 'IV': 1150, 'III': 1350, 'II': 1600, 'II+': 1700, 'I': 1800, 'I+': 1900,
+                   'I++': 1900, 'k': 2000, 'k+': 2100, 'k++': 2100, 'm': 2200}
+}
 
 
 class FidePeriod(models.Model):
