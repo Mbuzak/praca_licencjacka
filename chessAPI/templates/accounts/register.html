@@ -1,0 +1,16 @@
+{% extends "accounts/auth_base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Rejestracja</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{form|crispy}}
+            <button type="submit" class="btn btn-primary btn-block">Zarejestruj się</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

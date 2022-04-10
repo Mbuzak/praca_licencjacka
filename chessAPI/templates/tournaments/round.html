@@ -1,0 +1,28 @@
+{% extends 'base_tournament.html' %}
+
+
+{% block description %}
+<p>Runda {{ round_number }}</p>
+{% endblock description %}
+
+{% block content %}
+<div class="list-display" id="list-display-round">
+    <div>Szachownica</div>
+    <div>Białe</div>
+    <div>Wynik</div>
+    <div>Czarne</div>
+    <div class="row-border"></div>
+    {% for match in matches %}
+        <div>{{ match.chessboard }}</div>
+        <div><a href="{% url 'tournament_profile' tournament.id match.white.id %}">{{ match.white.person }}</a></div>
+        <div>{{ match.white_result|default_if_none:"" }} - {{ match.black_result|default_if_none:"" }}</div>
+        <div><a href="{% url 'tournament_profile' tournament.id match.black.id %}">{{ match.black.person }}</a></div>
+        {% if user.id == tournament.judge.id and not tournament.is_ended %}
+            <form action="{% url 'tournaments_update_match' match.round.tournament.id match.round match.id %}" method="get">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-flag"></i></button>
+            </form>
+        {% endif %}
+        <div class="row-border"></div>
+    {% endfor %}
+</div>
+{% endblock content %}

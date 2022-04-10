@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<p class="a">Użytkownicy</p>
+
+{% if latest_period %}
+    <div style="margin-bottom: 20px;">
+        <form method="get" action="{% url 'ratings_update_fide_period' %}">
+            <button type="submit" class="btn btn-primary">Aktualizacja rankingów FIDE</button>
+        </form>
+    </div>
+{% else %}
+    <p class="c" style="margin-bottom: 50px;">Aktualizacja rankingów dostępna od następnego miesiąca</p>
+{% endif %}
+
+
+<div class="list-display">
+    <div>Nr</div>
+    <div>ID</div>
+    <div>ID FIDE</div>
+    <div>Tytuł</div>
+    <div>Imię Nazwisko</div>
+    <div>Klub</div>
+    <div>WZSzach</div>
+    <div class="row-border"></div>
+    {% for account in object_list %}
+        <div>{{ forloop.counter }}</div>
+        <div>{{ account.id }}</div>
+        <div>{{ account.fiderating.fide_number }}</div>
+        <div>{{ account.get_category }}</div>
+        <div><a href="{% url 'profile' account.id %}">{{ account }}</a></div>
+        <div>
+            {% if account.club %}
+                {{ account.club }}
+            {% endif %}
+        </div>
+        <div>{{ account.province }}</div>
+        {% if not account.fiderating %}
+            <form method="get" action="{% url 'ratings_create_fide' account.id %}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-tag"></i>
+                </button>
+            </form>
+        {% endif %}
+        <div class="row-border"></div>
+    {% endfor %}
+</div>
+{% endblock content %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<p class="a">{{ account }} {{ account.get_category }}</p>
+<p>Profil użytkownika</p>
+<hr style="width: 30%; text-align: left; margin-left: 0; height: 2px; color: #9e9e9e; background-color: #9e9e9e;">
+
+<i class="fa fa-map-marker"></i>
+{{ account.province }}
+
+<p style="font-size: 24px; padding-top: 20px;">Ranking PZSzach</p>
+<p class="c">Obecne punkty: {{ account.get_polish_rating }}</p>
+<p class="c">Następny próg punktowy: {{ account.next_threshold }}</p>
+<p class="c">Następna kategoria: {{ account.next_category }}</p>
+
+<p style="font-size: 24px; padding-top: 20px;">Ranking FIDE</p>
+<table>
+    <tr style="text-align: center;">
+        <th style="width: 120px;">ID FIDE</th>
+        <th style="width: 50px;">Klasyczne</th>
+        <th style="width: 100px;">Szybkie</th>
+        <th style="width: 120px;">Błyskawiczne</th>
+    </tr>
+
+    <tr style="text-align: center;">
+        <td>{{ account.fiderating.fide_number|default_if_none:"" }}</td>
+        <td>{{ account.fiderating.classic }}</td>
+        <td>{{ account.fiderating.rapid }}</td>
+        <td>{{ account.fiderating.blitz }}</td>
+    </tr>
+</table>
+
+<p style="font-size: 24px; padding-top: 20px;">Turnieje użytkownika</p>
+<p>Planowane</p>
+{% for tournament in active_tournaments %}
+    {% if tournament.tournament.status == "coming soon" %}
+        <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
+    {% endif %}
+{% endfor %}
+
+<p>W trakcie</p>
+{% for tournament in active_tournaments %}
+    {% if tournament.tournament.status == "ongoing" %}
+        <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
+    {% endif %}
+{% endfor %}
+
+<p>Ukończone</p>
+{% for tournament in active_tournaments %}
+    {% if tournament.tournament.status == "ended" %}
+        <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
+    {% endif %}
+{% endfor %}
+
+{% endblock content %}

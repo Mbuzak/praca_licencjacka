@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+    {% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static '/style.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a href="{% url "home_tournaments" %}" class="navbar-brand">Match Endgame</a>
+        {% if user.is_authenticated %}
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">{{user.name}}</a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a href="{% url 'profile' user.id %}" class="dropdown-item"><i class="fa fa-user-circle-o"></i>Profil</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'home_tournaments' %}" class="dropdown-item"><i class="fa fa-trophy"></i>Turnieje</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'home_club' %}" class="dropdown-item"><i class="fa fa-puzzle-piece"></i>Kluby</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'home_accounts' %}" class="dropdown-item"><i class="fa fa-users"></i>Użytkownicy</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-sign-out"></i>Wyloguj</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        {% endif %}
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="text-center alert alert-{{ message.tags }}">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="True">&times;</span>
+                    </button>
+                     {{ message|safe }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <p class="a">{{ tournament.name }}</p>
+        {% block description %} {% endblock description %}
+        <hr style="width: 30%; text-align: left; margin-left: 0; height: 2px; color: #9e9e9e; background-color: #9e9e9e;">
+
+        <div style="margin-bottom: 20px;">
+            <a href="{% url 'detail_tournament' tournament.id %}">Strona domowa</a>
+            <a href="{% url 'tournaments_placement' tournament.id %}">Punktacja</a>
+            <a href="{% url 'tournament_members' tournament.id %}">Lista startowa</a>
+            <a href="{% url 'detail_tournament_application' tournament.id %}">Zgłoszenia</a>
+            <a href="{% url 'tournaments_statistics' tournament.id %}">Statystyka</a>
+        </div>
+
+        {% block content %} {% endblock %}
+    </div>
+    <footer>Copyright 2022</footer>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+{% extends 'base_tournament.html' %}
+
+
+{% block description %}
+<p class="inline">{{ member.person }}</p>
+<p class="chess-title inline">{{ member.title }}</p>
+{% endblock description %}
+
+{% block content %}
+<div class="info-block1">
+    <table id="tournaments">
+        <tr>
+            <th>Runda</th>
+            <th>Stolik</th>
+            <th>Wynik</th>
+            <th>Imię Nazwicko</th>
+            <th>Tytuł</th>
+            <th>PZSzach</th>
+        </tr>
+        {% for match in matches %}
+            <tr>
+                <td>{{ match.round.round }}</td>
+                <td>{{ match.chessboard }}</td>
+                {% if match.white.id == member.id %}
+                    <td>{{ match.white_result|default_if_none:"" }}</td>
+                    <td>{{ match.black.person }}</td>
+                    <td>{{ match.black.get_title }}</td>
+                    <td>{{ match.black.get_polish_rating }}</td>
+                {% else %}
+                    <td>{{ match.black_result|default_if_none:"" }}</td>
+                    <td>{{ match.white.person }}</td>
+                    <td>{{ match.white.get_title }}</td>
+                    <td>{{ match.white.get_polish_rating }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="info-block1">
+    <p style="font-size: 22px; margin-left: 100px;">Uzyskany wynik</p>
+    <table style="text-align: center; margin-left: auto; margin-right: auto;">
+        <tr>
+            <th>Ranking bazowy</th>
+            <td>{{ member.get_polish_rating }}</td>
+        </tr>
+
+        <tr>
+            <th>Uzyskany ranking</th>
+            <td><div id="progress_rating"></div></td>
+        </tr>
+
+        <tr>
+            <th>Punkty</th>
+            <td><div id="result"></div></td>
+        </tr>
+
+        <tr>
+            <th>Średni ranking</th>
+            <td><div id="average_rating"></div></td>
+        </tr>
+    </table>
+</div>
+
+{% for match in matches %}
+        {% if match.white.id == member.person.id %}
+        {% else %}
+        {% endif %}
+    {% endfor %}
+
+<script>
+    var result = 0;
+    var ratings = 0;
+    var match_count = 0;
+    var progress_rating;
+
+    {% for match in matches %}
+        {% if match.white_result and match.black_result %}
+            match_count++;
+            {% if match.white.id == member.id %}
+                result += {{ match.white_result }}
+                ratings += {{ match.black.get_polish_rating }}
+            {% else %}
+                result += {{ match.black_result }}
+                ratings += {{ match.white.get_polish_rating }}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    progress_rating = 1/(1+match_count) * (ratings + {{ member.get_polish_rating }} + 400 * (2 * result - match_count))
+
+    document.getElementById("result").innerHTML = result + " / " + match_count + " (" + Math.round(result/match_count * 100) + "%)"
+    document.getElementById("average_rating").innerHTML = Math.round(ratings/match_count)
+    document.getElementById("progress_rating").innerHTML = Math.round(progress_rating)
+</script>
+{% endblock content %}

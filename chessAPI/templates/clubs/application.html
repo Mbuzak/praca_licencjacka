@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<p class="a">{{ club }}</p>
+<p>Zgłoszenia</p>
+
+{% if club.manager.id != user.id and not user.club and not has_application %}
+    <form method="post" action="{% url 'create_club_application' club.id %}">
+        {% csrf_token %}
+        <button class="btn btn-success confirm-join-club">Dołącz</button>
+    </form>
+{% endif %}
+
+<div class="list-display">
+    <div>Numer</div>
+    <div>Id</div>
+    <div>Imię Nazwisko</div>
+    <div>WZSzach</div>
+    <div>Miasto</div>
+    <div>Kategoria</div>
+    <div>FIDE</div>
+
+    <div class="row-border"></div>
+    {% for application in applications %}
+        <div>{{ forloop.counter }}</div>
+        <div>{{ application.person.get_id_cr }}</div>
+        <div>{{ application.person }}</div>
+        <div>{{ application.person.province }}</div>
+        <div>{{ application.person.city }}</div>
+        <div>{{ application.person.category }}</div>
+        <div></div>
+        {% if user.id == club.manager.id %}
+            <form method="post" action="{% url 'clubs_add_member' application.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Dodaj</button>
+            </form>
+            <form method="post" action="{% url 'delete_club_application' application.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Usuń</button>
+            </form>
+        {% endif %}
+        <div class="row-border"></div>
+    {% endfor %}
+</div>
+
+<script>
+    $(document).on('click', '.confirm-join-club', function(){
+        return confirm("Czy na pewno chcesz dołączyć do klubu");
+    })
+</script>
+{% endblock content %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<p class="a">Kluby szachowe</p>
+<div style="margin-bottom: 20px;">
+    <form style="display: inline;" action="{% url 'create_club' %}" method="get">
+        <button type="submit" class="btn btn-primary">Nowy klub</button>
+    </form>
+    <form style="display: inline;" action="{% url 'addresses_create_address' %}" method="get">
+        <button type="submit" class="btn btn-primary">Nowy adres</button>
+    </form>
+</div>
+{% if object_list %}
+    <table id="tournaments">
+        <tr>
+            <th>Nazwa</th>
+            <th>Województwo</th>
+            <th>Miasto</th>
+            <th>Menadżer</th>
+        </tr>
+        {% for club in object_list %}
+            <tr>
+                <td style="width: 300px;"><a href="/clubs/{{ club.id }}/">{{ club.name }}</a></td>
+                <td>{{ club.address.province }}</td>
+                <td style="width: 200px;">{{ club.address.city }}</td>
+                <td style="width: 200px;">{{ club.manager }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+{% endblock content %}

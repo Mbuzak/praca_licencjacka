@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+<p class="a">Dodaj klub</p>
+<div class="col-md-4">
+	<form method="post">
+		{% csrf_token %}
+		{{form |crispy}}
+		<button type="submit" class="btn btn-primary">Zapisz</button>
+	</form>
+</div>
+{% endblock content %}

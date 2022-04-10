@@ -1,0 +1,164 @@
+body {
+    background-color: #eeeeee;
+    color: #000000;
+    font-size: 16px;
+}
+
+p.a {
+    font-size: 28px;
+    margin-bottom: 2px;
+}
+
+p.b {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+p.c {
+    margin-bottom: 2px;
+}
+
+a:link {
+	text-decoration: none;
+	font-weight: bold;
+}
+
+a:hover {
+	color: blue;
+}
+
+a {
+	color: darkblue;
+}
+
+.list-display {
+    text-align: center;
+    display: grid;
+    grid-template-columns: 8ch 8ch 8ch 8ch 16ch 16ch 12ch 10ch;
+    grid-gap: 10px;
+    font-size: 14px;
+    justify-content: center;
+}
+
+.row-border {
+    border-top: 2px solid #AFEEEE;
+    grid-column: 1 / 10;
+}
+
+#list-display-round {
+    grid-gap: 4px;
+    grid-template-columns: 8ch 20ch 16ch 20ch 24ch;
+}
+
+#tournaments {
+	font-size: 14px;
+	margin-left: auto;
+	margin-right: auto;
+	box-shadow: 3px 3px #4e4e4e;
+	background-color: #f0f0f0;
+	text-align: center;
+}
+
+#tournaments td, #tournaments th {
+	padding: 6px 20px;
+}
+
+#tournaments tr:nth-child(even) {
+	background-color: #dadada;
+}
+
+
+#tournaments th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: #2BA2F4;
+  color: white;
+  text-align: center;
+}
+
+.button {
+  border-radius: 5px;
+  color: #ffffff;
+  padding: 5px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+#red-button {
+    background-color: #ff0000;
+}
+
+#red-button:hover {
+    background-color: #ff3333;
+}
+
+#green-button {
+    background-color: #00aa00;
+}
+
+#green-button:hover {
+    background-color: #00dd00;
+}
+
+#blue-button {
+    background-color: #0000cc;
+}
+
+#blue-button:hover {
+    background-color: #1111ff;
+}
+
+.navbar {
+    background-color: #00ffff;
+}
+
+.container {
+    position: relative;
+	background-color: #ffffff;
+	margin-top: 100px;
+	margin-left: 150px;
+	margin-bottom: 50px;
+	min-height: 600px;
+	width: 80%;
+	padding: 10px;
+	font-weight: bold;
+}
+
+.info-block1 {
+    position: relative;
+    display: inline-block;
+    width: 60ch;
+    box-sizing: border-box;
+    float: left;
+}
+
+.clear-float {
+    clear:both;
+}
+
+.asteriskField {
+    display: none;
+}
+
+footer {
+    position: relative;
+    margin-bottom: 20px;
+    margin-left: 20px;
+}
+
+p.inline {
+    display: inline;
+}
+
+p.chess-title {
+    font-size: 20px;
+    font-family: Copperplate;
+}
+
+.inline {
+    display: inline-block;
+}

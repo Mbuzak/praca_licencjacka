@@ -1,0 +1,35 @@
+{% extends 'base_tournament.html' %}
+
+
+{% block description %}
+<p>Punktacja</p>
+{% endblock description %}
+
+{% block content %}
+<table id="tournaments">
+    <tr>
+        <th>Nr</th>
+        <th>Tytuł</th>
+        <th>Imię Nazwisko</th>
+        <th>FIDE</th>
+        <th>Ranking</th>
+        <th>Klub</th>
+        <th>Data ur.</th>
+        <th>Punkty</th>
+    </tr>
+    {% for member in members %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ member.get_title }}</td>
+            <td><a href="{% url 'tournament_profile' tournament.id member.id %}">{{ member.person }}</a></td>
+            <td>
+                {{ member.fide_rating }}
+            </td>
+            <td>{{ member.get_polish_rating }}</td>
+            <td>{{ member.person.club|default_if_none:"" }}</td>
+            <td>{{ member.person.born_year }}</td>
+            <td>{{ member.points }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock content %}
