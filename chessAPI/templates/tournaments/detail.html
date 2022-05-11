@@ -6,11 +6,17 @@
 {% endblock description %}
 
 {% block content %}
+<div id="tournament-round-header">Runda</div>
+
 <div style="margin-bottom: 20px;">
     {% for round in rounds %}
-        <a href="{% url 'detail_round' tournament.id round.id %}">Runda {{ round.round }}</a>
+        <form method="get" action="{% url 'detail_round' tournament.id round.id %}">
+            <button type="submit" class="tournament-rounds">{{ round.round }}</button>
+        </form>
     {% endfor %}
 </div>
+
+<div style="clear: both; height: 20px;"></div>
 
 <div class="info-block1">
     <p class="b">Czas i miejsce</p>
@@ -20,7 +26,7 @@
     </p>
     <p class="c">
         <i class="fa fa-map-marker"></i>
-        {{ tournament.address.city }}, ul. {{ tournament.address.street }}
+        {{ tournament.city }}
     </p>
 
     <p>
@@ -64,6 +70,10 @@
 
 <div class="clear-float"></div>
 
+{{ tournament.description|linebreaks }}
+
+<p id="average_age"></p>
+
 {% if is_member %}
     {% for i in is_member %}
         <form method="get" action="{% url 'leave_tournament' i.id %}">
@@ -71,6 +81,7 @@
         </form>
     {% endfor %}
 {% endif %}
+
 {% if tournament.judge.id == user.id %}
     {% if tournament.is_started %}
         {% if not tournament.is_ended %}
@@ -78,10 +89,18 @@
                 <form method="get" action="{% url 'tournaments_end_tournament' tournament.id %}" style="display: inline;">
                     <button type="submit" class="btn btn-danger">Zakończ turniej</button>
                 </form>
+
+                <form method="get" action="{% url 'update_tournament' tournament.id %}" style="display: inline;">
+                    <button style="display: inline-block;" type="submit" class="btn btn-primary">Edycja</button>
+                </form>
             {% else %}
                 <form method="post" action="{% url 'create_round' tournament.id %}" style="display: inline;">
                     {% csrf_token %}
                     <button class="btn btn-success confirm-create-round">Nowa runda</button>
+                </form>
+
+                <form method="get" action="{% url 'update_tournament' tournament.id %}" style="display: inline;">
+                    <button style="display: inline-block;" type="submit" class="btn btn-primary">Edycja</button>
                 </form>
             {% endif %}
         {% endif %}
@@ -114,5 +133,18 @@
     $(document).on('click', '.confirm-create-round', function(){
         return confirm("Czy na pewno chcesz dodać nową rundę\n\n1. Zostaną wygenerowane partie szachowe");
     })
+
+
+</script>
+
+<script>
+    var age_sum = 0;
+    var year = new Date().getFullYear();
+
+    {% for member in members %}
+        age_sum += {{ member.person.born_year }};
+    {% endfor %}
+
+    document.getElementById("average_age").innerHTML = Math.round(year - (age_sum / {{ members.count }}));
 </script>
 {% endblock content %}

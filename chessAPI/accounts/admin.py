@@ -12,6 +12,7 @@ class AccountAdmin(admin.ModelAdmin):
         (None, {'fields': ('email', 'name', 'lastname', 'gender', 'born_year', 'club')}),
         ('Address', {'fields': ('province',)}),
         ('Title', {'fields': ('title',)}),
+        ('Permission', {'fields': ('groups',)}),
     ]
     filter_horizontal = ('groups', 'user_permissions')
     search_fields = ('email',)

@@ -3,7 +3,9 @@
 
 {% block description %}
 <p class="inline">{{ member.person }}</p>
-<p class="chess-title inline">{{ member.title }}</p>
+{% if member.get_title %}
+    <p class="chess-title inline">{{ member.get_title }}</p>
+{% endif %}
 {% endblock description %}
 
 {% block content %}
@@ -25,12 +27,12 @@
                     <td>{{ match.white_result|default_if_none:"" }}</td>
                     <td>{{ match.black.person }}</td>
                     <td>{{ match.black.get_title }}</td>
-                    <td>{{ match.black.get_polish_rating }}</td>
+                    <td>{{ match.black.get_rating }}</td>
                 {% else %}
                     <td>{{ match.black_result|default_if_none:"" }}</td>
                     <td>{{ match.white.person }}</td>
                     <td>{{ match.white.get_title }}</td>
-                    <td>{{ match.white.get_polish_rating }}</td>
+                    <td>{{ match.white.get_rating }}</td>
                 {% endif %}
             </tr>
         {% endfor %}
@@ -38,11 +40,10 @@
 </div>
 
 <div class="info-block1">
-    <p style="font-size: 22px; margin-left: 100px;">Uzyskany wynik</p>
-    <table style="text-align: center; margin-left: auto; margin-right: auto;">
+    <table style="text-align: center; margin-left: auto; margin-right: auto; font-size: 20px;">
         <tr>
             <th>Ranking bazowy</th>
-            <td>{{ member.get_polish_rating }}</td>
+            <td>{{ member.get_rating }}</td>
         </tr>
 
         <tr>
@@ -62,12 +63,6 @@
     </table>
 </div>
 
-{% for match in matches %}
-        {% if match.white.id == member.person.id %}
-        {% else %}
-        {% endif %}
-    {% endfor %}
-
 <script>
     var result = 0;
     var ratings = 0;
@@ -75,18 +70,18 @@
     var progress_rating;
 
     {% for match in matches %}
-        {% if match.white_result and match.black_result %}
+        {% if match.white_result >= 0 and match.black_result >= 0 %}
             match_count++;
             {% if match.white.id == member.id %}
                 result += {{ match.white_result }}
-                ratings += {{ match.black.get_polish_rating }}
+                ratings += {{ match.black.get_rating }}
             {% else %}
                 result += {{ match.black_result }}
-                ratings += {{ match.white.get_polish_rating }}
+                ratings += {{ match.white.get_rating }}
             {% endif %}
         {% endif %}
     {% endfor %}
-    progress_rating = 1/(1+match_count) * (ratings + {{ member.get_polish_rating }} + 400 * (2 * result - match_count))
+    progress_rating = 1/(1+match_count) * (ratings + {{ member.get_rating }} + 400 * (2 * result - match_count))
 
     document.getElementById("result").innerHTML = result + " / " + match_count + " (" + Math.round(result/match_count * 100) + "%)"
     document.getElementById("average_rating").innerHTML = Math.round(ratings/match_count)

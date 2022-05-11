@@ -1,7 +1,7 @@
 from django import forms
 from .models import Tournament
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset, Button
+from crispy_forms.layout import Layout, Submit, Row, Column
 
 
 class DateInput(forms.DateInput):
@@ -11,8 +11,8 @@ class DateInput(forms.DateInput):
 class TournamentForm(forms.ModelForm):
     class Meta:
         model = Tournament
-        fields = ('name', 'start', 'end', 'game_system', 'game_rate', 'game_type', 'is_fide', 'round_number',
-                  'address', 'organizer')
+        fields = ('name', 'start', 'end', 'game_system', 'game_rate', 'game_type', 'is_polish_rated', 'round_number',
+                  'city', 'organizer', 'description')
         widgets = {'start': DateInput(),
                    'end': DateInput(),
                    }
@@ -26,12 +26,10 @@ class TournamentForm(forms.ModelForm):
                 css_class='form_row'
             ),
             Row(
-                Column('address', css_class='form-group col-md-4 mb-4'),
+                Column('city', css_class='form-group col-md-3 mb-4'),
                 Column('organizer', css_class='form-group col-md-4'),
                 css_class='form_row'
             ),
-            Fieldset('co'),
-            Button("{% url 'create_address' %}", 'create_address', css_class='btn btn-primary', onclick="{% url 'create_address' %}"),
             Row(
                 Column('start', css_class='form-group col-md-3 mb-4'),
                 Column('end', css_class='form-group col-md-3'),
@@ -45,7 +43,11 @@ class TournamentForm(forms.ModelForm):
                 css_class='form_row'
             ),
             Row(
-                Column('is_fide', css_class='form-group col-md-5 mb-4'),
+                Column('is_polish_rated', css_class='form-group col-md-5 mb-4'),
+                css_class='form_row'
+            ),
+            Row(
+                Column('description', css_class='form-group col-md-5 mb-4'),
                 css_class='form_row'
             ),
             Submit('submit', 'Zapisz')

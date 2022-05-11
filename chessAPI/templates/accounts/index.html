@@ -4,18 +4,47 @@
 {% block content %}
 <p class="a">Użytkownicy</p>
 
-{% if latest_period %}
-    <div style="margin-bottom: 20px;">
-        <form method="get" action="{% url 'ratings_update_fide_period' %}">
-            <button type="submit" class="btn btn-primary">Aktualizacja rankingów FIDE</button>
-        </form>
-    </div>
-{% else %}
-    <p class="c" style="margin-bottom: 50px;">Aktualizacja rankingów dostępna od następnego miesiąca</p>
+{% if user.is_WZSzach_engineer %}
+    {% if latest_period %}
+        <div style="margin-bottom: 20px;">
+            <form method="get" action="{% url 'ratings_update_fide_period' %}">
+                <button type="submit" class="btn btn-primary">Aktualizacja rankingów FIDE</button>
+            </form>
+        </div>
+    {% else %}
+        <p class="c" style="margin-bottom: 50px;">Aktualizacja rankingów dostępna od następnego miesiąca</p>
+    {% endif %}
+
+    {% if promotions %}
+        <table id="tournaments">
+            <tr>
+                <th>Imię Nazwisko</th>
+                <th>Turniej</th>
+                <th>Sędzia</th>
+                <th>Tytuł do zatwierdzenia</th>
+            </tr>
+            {% for promotion in promotions %}
+                <tr>
+                    <td><a href="{% url 'profile' promotion.participant.person.id %}">{{ promotion.participant.person.name }} {{ promotion.participant.person.lastname }}</a></td>
+                    <td>{{ promotion.participant.tournament }}</td>
+                    <td>{{ promotion.participant.tournament.judge }}</td>
+                    <td>{{ promotion.title }}</td>
+                    <td>
+                        <form method="get" action="{%url 'accounts_update_category' promotion.id %}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </form>
+                </tr>
+            {% endfor %}
+        </table>
+
+    {% else %}
+        <p class="b">Brak nowych kategorii do weryfikacji</p>
+    {% endif %}
 {% endif %}
 
-
-<div class="list-display">
+<div class="list-display" style="margin-top: 70px;">
     <div>Nr</div>
     <div>ID</div>
     <div>ID FIDE</div>
@@ -28,20 +57,18 @@
         <div>{{ forloop.counter }}</div>
         <div>{{ account.id }}</div>
         <div>{{ account.fiderating.fide_number }}</div>
-        <div>{{ account.get_category }}</div>
+        <div>{{ account.get_title }}</div>
         <div><a href="{% url 'profile' account.id %}">{{ account }}</a></div>
-        <div>
-            {% if account.club %}
-                {{ account.club }}
-            {% endif %}
-        </div>
+        <div>{{ account.club|default_if_none:"" }}</div>
         <div>{{ account.province }}</div>
-        {% if not account.fiderating %}
-            <form method="get" action="{% url 'ratings_create_fide' account.id %}">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa fa-tag"></i>
-                </button>
-            </form>
+        {% if user.is_WZSzach_engineer %}
+            {% if not account.fiderating %}
+                <form method="get" action="{% url 'ratings_create_fide' account.id %}">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-tag"></i>
+                    </button>
+                </form>
+            {% endif %}
         {% endif %}
         <div class="row-border"></div>
     {% endfor %}

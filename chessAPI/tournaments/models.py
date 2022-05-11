@@ -1,22 +1,20 @@
 import datetime
 from chessAPI import settings
-import model_helpers
-from addresses.models import Address
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
-from ratings.models import TITLE
+from django.core.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
+from ratings.models import TITLE, FIDE_TITLE, TITLE_TUPLE
+from accounts.models import GENDER
 
 
 GAME_TYPE_CHOICES = [
-    ('błyskawiczny', 'blitz'),
-    ('szybki', 'rapid'),
-    ('klasyczny', 'classic'),
+    ('błyskawiczny', 'błyskawiczny'),
+    ('szybki', 'szybki'),
+    ('klasyczny', 'klasyczny'),
 ]
 
 GAME_SYSTEM_CHOICES = [
     ('szwajcarski', 'szwajcarski'),
     ('kołowy(rundowy)', 'kołowy(rundowy)'),
-    ('arena', 'arena'),
 ]
 
 
@@ -24,20 +22,23 @@ class Tournament(models.Model):
     name = models.CharField(verbose_name='Nazwa turnieju', max_length=100, unique=True, default='')
     start = models.DateField(verbose_name='Data rozpoczęcia', default=datetime.date.today)
     end = models.DateField(verbose_name='Data zakończenia', default=datetime.date.today)
-    round_number = models.IntegerField(verbose_name='Liczba rund', default=1, validators=[MinValueValidator(1)])
+    round_number = models.SmallIntegerField(verbose_name='Liczba rund', default=1, validators=[MinValueValidator(1)])
 
     game_rate = models.CharField(verbose_name='Tempo gry', max_length=10, default='')
     game_system = models.CharField(verbose_name='System rozgrywek', max_length=20, choices=GAME_SYSTEM_CHOICES,
                                    default='')
     game_type = models.CharField(verbose_name='Rodzaj gry', choices=GAME_TYPE_CHOICES, max_length=20, default='')
-    is_fide = models.BooleanField(verbose_name='Czy turniej jest rankingowy FIDE', default=False)
+    is_polish_rated = models.BooleanField(verbose_name='Czy turniej jest zgłoszony do oceny PZSzach', default=False)
 
-    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='Adres')
+    city = models.CharField(verbose_name='Miasto', max_length=50, blank=True, default='')
     organizer = models.CharField(verbose_name='Organizator', max_length=100, default='')
     judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Sędzia', default='')
 
     is_started = models.BooleanField(default=False)
     is_ended = models.BooleanField(default=False)
+
+    description = models.TextField(verbose_name='Opis', max_length=255, blank=True,
+                                   validators=[MaxLengthValidator(250)])
 
     def __str__(self):
         return self.name
@@ -53,6 +54,9 @@ class Tournament(models.Model):
         colors = {'ongoing': '#0000bb', 'ended': '#bb0000', 'coming soon': '#00bb00'}
         return colors[self.status()]
 
+    def count_members(self):
+        return len(TournamentMember.objects.filter(tournament_id=self.pk))
+
 
 class TournamentMember(models.Model):
     person = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -61,20 +65,23 @@ class TournamentMember(models.Model):
     title = models.CharField(max_length=10)
     fide_rating = models.SmallIntegerField(default=0)
 
+    def __str__(self):
+        return self.person.name + ' ' + self.person.lastname + ', ' + self.tournament.name
+
     def get_title(self):
         if self.title == 'b/k':
             return ''
         return self.title
 
-    def get_polish_rating(self):
-        if self.person.gender == 'M':
-            return TITLE['male'][self.title]
-        return TITLE['female'][self.title]
+    def get_rating(self):
+        if self.title in TITLE_TUPLE:
+            return TITLE[GENDER[self.person.gender]][self.title]
+        return FIDE_TITLE[GENDER[self.person.gender]][self.title]
 
 
 class Round(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    round = models.IntegerField()
+    round = models.SmallIntegerField()
 
     def __str__(self):
         return str(self.pk)
@@ -90,12 +97,16 @@ class Match(models.Model):
     ]
 
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
-    chessboard = models.IntegerField()
+    chessboard = models.SmallIntegerField()
 
     white = models.ForeignKey(TournamentMember, on_delete=models.CASCADE, related_name='match_white')
     black = models.ForeignKey(TournamentMember, on_delete=models.CASCADE, related_name='match_black')
 
-    white_result = models.CharField(max_length=20, choices=GAME_RESULT_CHOICES, verbose_name='Wynik białych',
-                                    blank=True, null=True)
-    black_result = models.CharField(max_length=20, choices=GAME_RESULT_CHOICES, verbose_name='Wynik czarnych',
-                                    blank=True, null=True)
+    white_result = models.FloatField(verbose_name='Wynik', blank=True, null=True)
+    black_result = models.FloatField(verbose_name='Wynik', blank=True, null=True)
+
+
+class Promotion(models.Model):
+    participant = models.OneToOneField(TournamentMember, on_delete=models.CASCADE, related_name='participant')
+    title = models.CharField(max_length=10)
+    status = models.BooleanField()

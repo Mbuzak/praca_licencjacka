@@ -26,7 +26,7 @@
             <td>
                 {{ member.fide_rating }}
             </td>
-            <td>{{ member.get_polish_rating }}</td>
+            <td>{{ member.get_rating }}</td>
             <td>{{ member.person.club|default_if_none:"" }}</td>
             <td>{{ member.person.born_year }}</td>
         </tr>

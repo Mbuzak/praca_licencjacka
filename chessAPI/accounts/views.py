@@ -1,13 +1,15 @@
 from django.contrib.auth.models import Permission, Group
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, CreateView
+from django.views.generic import DetailView, CreateView, View
 from .forms import RegisterForm
 from .models import Account
-from tournaments.models import TournamentMember
+from tournaments.models import TournamentMember, Promotion
 from ratings.models import FideHistory, FidePeriod
 from django.views.generic.list import ListView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from datetime import datetime
+from tournaments.pairing_system import verify_promotion
 
 
 class RegisterView(CreateView):
@@ -29,6 +31,7 @@ class IndexView(ListView):
         latest_period = FidePeriod.objects.latest('year', 'month')
         if latest_period.month == datetime.now().month and latest_period.year == datetime.now().year:
             context['latest_period'] = False
+        context['promotions'] = Promotion.objects.filter(status=False)
 
         return context
 
@@ -41,15 +44,40 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['active_tournaments'] = TournamentMember.objects.filter(person=self.kwargs['pk'])
         context['fide_history'] = FideHistory.objects.filter(person_id=self.kwargs['pk'])
+        history = TournamentMember.objects.filter(person=self.kwargs['pk'],
+                                                  tournament__is_ended=True).order_by('tournament__start', 'tournament__end')[0:5]
+        context['latest_tournaments'] = history
 
-        u = Account.objects.get(pk=431)
-        u2 = Account.objects.get(pk=16)
+        print(self.request.user)
+
+        #u = Account.objects.get(pk=self.request.user.id)
+        u = Account.objects.get(pk=13)
         g = Group.objects.get(name='Judge')
         p = Permission.objects.get(name='Can add tournament')
 
         print(p)
         print(u.get_user_permissions())
-        print(u.has_perm('tournaments.add_tournament'), u2.has_perm('tournaments.add_tournament'))
-        print(u.has_perm('tournaments.create_tournament'), u2.has_perm('tournaments.create_tournament'))
-        print(u.has_perm(p), u2.has_perm(p))
+        for g in u.groups.all():
+            print(g.name)
+            print(g.permissions.all())
+
+        print('!!!')
+        print('judge', u.is_judge())
+        print('engineer', u.is_WZSzach_engineer())
+        print('instructor', u.is_instructor())
+
+        print(u.has_perm('tournaments.add_tournament'))
+        print(u.has_perm('tournaments.create_tournament'))
+        print(u.has_perm(p))
         return context
+
+
+class UpdateCategory(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ('change_promotion',)
+
+    def get(self, request, pk):
+        promotion = Promotion.objects.get(pk=pk)
+        verify_promotion(promotion)
+
+        url = reverse_lazy('home_accounts')
+        return HttpResponseRedirect(url)

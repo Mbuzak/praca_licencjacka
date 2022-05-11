@@ -1,8 +1,8 @@
 from django.db.models import Max
-from .models import TournamentMember, Match, Round
+from .models import TournamentMember, Match, Round, Promotion
 from ratings.models import FideRating, TITLE_TUPLE, THRESHOLD
 from django.db.models import Q
-from accounts.models import Account
+from accounts.models import Account, GENDER
 
 
 results = {
@@ -80,8 +80,8 @@ def update_results(pk):
     matches = Match.objects.filter(round_id__in=rounds_id)
 
     for member in TournamentMember.objects.filter(tournament_id=pk):
-        white_points = sum([results[x.white_result] for x in matches.filter(white_id=member.id)])
-        black_points = sum([results[x.black_result] for x in matches.filter(black_id=member.id)])
+        white_points = sum([x.white_result for x in matches.filter(white_id=member.id)])
+        black_points = sum([x.black_result for x in matches.filter(black_id=member.id)])
 
         member.points = white_points + black_points
         member.save()
@@ -125,19 +125,28 @@ def obtain_rating(tournament, member):
     rating_sum = 0
     for match in matches:
         if match.white.id == member.id:
-            rating_sum += match.black.get_polish_rating()
+            rating_sum += match.black.get_rating()
         else:
-            rating_sum += match.white.get_polish_rating()
+            rating_sum += match.white.get_rating()
 
     match_count = len(matches)
-    person_rating = member.get_polish_rating()
+    person_rating = member.get_rating()
     points = member.points
 
     calculate_rating = (1 / (match_count + 1)) * (person_rating + rating_sum + 400 * ((2 * points) - match_count))
     return round(calculate_rating)
 
 
-def update_categories(tournament):
+def verify_promotion(promotion):
+    promotion.status = True
+    promotion.save()
+
+    account = Account.objects.get(pk=promotion.participant.person.id)
+    account.title = promotion.title
+    account.save()
+
+
+def set_participants_promotion(tournament):
     for member in TournamentMember.objects.filter(tournament_id=tournament.id):
         acc = Account.objects.get(pk=member.person.id)
         begin = TITLE_TUPLE.index(acc.title) + 1
@@ -145,16 +154,12 @@ def update_categories(tournament):
 
         rating = obtain_rating(tournament, member)
 
-        if acc.gender == 'M':
-            gender = 'male'
-        else:
-            gender = 'female'
-
-        new_category = None
+        new_title = None
         for i in range(begin, end):
-            if rating >= THRESHOLD[gender][TITLE_TUPLE[i]]:
-                new_category = TITLE_TUPLE[i]
+            if rating >= THRESHOLD[GENDER[acc.gender]][TITLE_TUPLE[i]]:
+                new_title = TITLE_TUPLE[i]
 
-        if new_category:
-            acc.title = new_category
-            acc.save()
+        if new_title:
+            Promotion(participant=member, title=new_title, status=False).save()
+
+

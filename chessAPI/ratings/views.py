@@ -1,6 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import View, UpdateView, CreateView
+from django.views.generic import View, CreateView
 from .models import FideRating, FideHistory, FidePeriod
 from accounts.models import Account
 import requests
@@ -11,66 +11,71 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 
 
+FIDE = {'International Master': 'IM',
+        'FIDE Master': 'FM',
+        'Grandmaster': 'GM',
+        'Woman Intl. Master': 'WIM',
+        'Woman Grandmaster': 'WGM',
+        'Candidate Master': 'CM',
+        'Woman FIDE Master': 'WFM',
+        'Woman Candidate Master': 'WCM',
+        }
+
+
+def is_new_period():
+    if FidePeriod.objects.all():
+        today = datetime.date.today()
+        latest_period = FidePeriod.objects.latest('change')
+        if latest_period.year == today.year and latest_period.month == today.month:
+            return False
+    return True
+
+
+def update_fide_history(fide_rating):
+    latest_period = FidePeriod.objects.latest('change')
+
+    FideHistory(classic=fide_rating.classic, rapid=fide_rating.rapid, blitz=fide_rating.blitz,
+                person_id=fide_rating.person.id, period_id=latest_period.id).save()
+
+
+def fide_profile(number):
+    path = requests.get(f'https://ratings.fide.com/profile/{number}').text
+    parser = HTMLParser(html=path)
+    parsed_text = parser.css('.profile-top-rating-dataCont')[0].text().strip()
+    regex_text = re.split(r'\s{2,}', parsed_text)
+
+    for i in [1, 3, 5]:
+        if regex_text[i] == 'Not rated':
+            regex_text[i] = 0
+
+    parsed_title = parser.css('.profile-top-info__block__row__data')[-1].text()
+
+    regex_text.append(parsed_title)
+    return regex_text
+
+
+def update_fide(fide_rating):
+    profile = fide_profile(fide_rating.fide_number)
+
+    fide_rating.classic = profile[1]
+    fide_rating.rapid = profile[3]
+    fide_rating.blitz = profile[5]
+    fide_rating.save()
+
+    if profile[6] != 'None':
+        account = fide_rating.person
+        account.title = FIDE[profile[6]]
+        account.save()
+
+
 class UpdateFidePeriodView(LoginRequiredMixin, View):
     def get(self, request):
-        def is_new_period():
-            if FidePeriod.objects.all():
-                today = datetime.date.today()
-                latest_period = FidePeriod.objects.latest('change')
-                if latest_period.year == today.year and latest_period.month == today.month:
-                    return False
-            return True
-
-        def create_period():
+        if is_new_period():
             FidePeriod().save()
 
-        def fide_accounts():
-            return Account.objects.exclude(fide_number__isnull=True)
-
-        def update_fide_history(account):
-            latest_period = FidePeriod.objects.latest('change')
-
-            if FideRating.objects.filter(person_id=account.id):
-                rating = FideRating.objects.get(person_id=account.id)
-
-                FideHistory(classic=rating.classic, rapid=rating.rapid, blitz=rating.blitz,
-                            person_id=account.id, period_id=latest_period.id).save()
-
-        def update_fide(account):
-            path = requests.get(f'https://ratings.fide.com/profile/{account.fide_number}').text
-            parser = HTMLParser(html=path)
-            parsed_text = parser.css('.profile-top-rating-dataCont')[0].text().strip()
-            regex_text = re.split(r'\s{2,}', parsed_text)
-
-            for i in [1, 3, 5]:
-                if regex_text[i] == 'Not rated':
-                    regex_text[i] = 0
-
-            parsed_title = parser.css('.profile-top-info__block__row__data')[-1].text()
-            title = None
-            if parsed_title != 'None':
-                title = parsed_title
-
-            if FideRating.objects.filter(person_id=account.id):
-                fide_rating = FideRating.objects.get(person_id=account.id)
-                fide_rating.classic = regex_text[1]
-                fide_rating.rapid = regex_text[3]
-                fide_rating.blitz = regex_text[5]
-                fide_rating.save()
-            else:
-                FideRating(classic=regex_text[1], rapid=regex_text[3], blitz=regex_text[5],
-                           title=title, person_id=account.id).save()
-                fide_rating = FideRating.objects.get(person_id=account.id)
-                account_edit = Account.objects.get(pk=account.id)
-                account_edit.fide_id = fide_rating.id
-                account_edit.save()
-
-        if is_new_period():
-            create_period()
-
-            for acc in fide_accounts():
-                update_fide_history(acc)
-                update_fide(acc)
+            for rating in FideRating.objects.all():
+                update_fide_history(rating)
+                update_fide(rating)
 
         url = reverse_lazy('home_accounts')
         return HttpResponseRedirect(url)
@@ -83,5 +88,22 @@ class CreateFideView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('home_accounts')
 
     def form_valid(self, form):
-        form.instance.person = Account.objects.get(pk=self.kwargs['pk'])
+        account = Account.objects.get(pk=self.kwargs['pk'])
+        form.instance.person = account
+
+        profile = fide_profile(form.instance.fide_number)
+
+        form.instance.classic = profile[1]
+        form.instance.rapid = profile[3]
+        form.instance.blitz = profile[5]
+
+        if profile[6] != 'None':
+            account.title = FIDE[profile[6]]
+            account.save()
+
         return super(CreateFideView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['account'] = Account.objects.get(pk=self.kwargs['pk'])
+        return context

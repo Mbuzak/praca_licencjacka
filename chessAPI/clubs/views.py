@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from .models import Club
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, View
@@ -32,11 +32,12 @@ class DetailClub(DetailView):
         return context
 
 
-class CreateClub(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class CreateClub(LoginRequiredMixin, SuccessMessageMixin, PermissionRequiredMixin, CreateView):
     model = Club
     fields = ('name', 'email', 'address')
     template_name = 'clubs/create.html'
     success_url = reverse_lazy('home_club')
+    permission_required = ('add_club',)
 
     def get_success_message(self, cleaned_data):
         return '%(name)s został pomyślnie utworzony' % {'name': self.object.name}
@@ -46,11 +47,12 @@ class CreateClub(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super(CreateClub, self).form_valid(form)
 
 
-class UpdateClub(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class UpdateClub(LoginRequiredMixin, SuccessMessageMixin, PermissionRequiredMixin, UpdateView):
     model = Club
     template_name = 'clubs/update.html'
     fields = ('name', 'email', 'address')
     success_url = reverse_lazy('home_club')
+    permission_required = ('change_club',)
 
     def get_success_message(self, cleaned_data):
         return '%(name)s został zaktualizowany' % {'name': self.object.name}

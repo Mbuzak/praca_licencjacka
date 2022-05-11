@@ -29,7 +29,7 @@
 <p class="b">Menadżer</p>
 <p>{{ club.manager }}</p>
 
-<p class="b">Data rejestracji</p>
+<p class="b">Data założenia</p>
 <p>{{ club.registration|date:"d.m.Y" }}</p>
 
 <p class="a">Członkowie klubu</p>
@@ -52,15 +52,17 @@
     {% endfor %}
 </div>
 
-{% if user.id == club.manager.id %}
-    <form action="{% url 'update_club' club.id %}" method="get">
-        <button type="submit" class="btn btn-primary">Edycja klubu</button>
-    </form>
+{% if user.is_instructor %}
+    {% if user.id == club.manager.id %}
+        <form action="{% url 'update_club' club.id %}" method="get">
+            <button type="submit" class="btn btn-primary">Edycja klubu</button>
+        </form>
 
-    <form action="{% url 'delete_club' club.id %}" method="post">
-        {% csrf_token %}
-        <button class="btn btn-danger confirm-delete-club">Usuń klub</button>
-    </form>
+        <form action="{% url 'delete_club' club.id %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger confirm-delete-club">Usuń klub</button>
+        </form>
+    {% endif %}
 {% endif %}
 
 <script>

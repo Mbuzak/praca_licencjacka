@@ -6,6 +6,18 @@
 {% endblock description %}
 
 {% block content %}
+<div id="tournament-round-header">Runda</div>
+
+<div style="margin-bottom: 20px;">
+    {% for round in rounds %}
+        <form method="get" action="{% url 'detail_round' tournament.id round.id %}">
+            <button type="submit" class="tournament-rounds">{{ round.round }}</button>
+        </form>
+    {% endfor %}
+</div>
+
+<div style="clear: both; height: 20px;"></div>
+
 <div class="list-display" id="list-display-round">
     <div>Szachownica</div>
     <div>Białe</div>

@@ -10,8 +10,54 @@ from .forms import TournamentForm
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from ratings.models import FideRating
-from .pairing_system import create_pairing, create_round, get_fide_rating, update_results, round_count, update_categories
+from .pairing_system import create_pairing, create_round, get_fide_rating, update_results, round_count, set_participants_promotion
 from joinment.models import Application
+from .pypair import Swiss
+
+
+def tournament_round_count(tournament_id):
+    rounds = Round.objects.filter(tournament_id=tournament_id)
+    if rounds:
+        return rounds.latest('round').round
+    return 0
+
+
+def swiss_pairing(tournament_id):
+    players = []
+    games = []
+
+    members = TournamentMember.objects.filter(tournament_id=tournament_id)
+    matches = Match.objects.filter(round__tournament_id=tournament_id)
+
+    for member in members:
+        full_name = str(member.person.name + ' ' + member.person.lastname)
+        players.append({'name': full_name, 'rating': member.get_rating(), 'title': 0})  # TBD
+
+    for i in range(1, tournament_round_count(tournament_id)):
+        round_matches = matches.filter(round__round=i)
+
+        for match in round_matches:
+            white_fullname = str(match.white.person.name + ' ' + match.white.person.lastname)
+            black_fullname = str(match.black.person.name + ' ' + match.black.person.lastname)
+
+            games.append({'player': white_fullname, 'opponent': black_fullname,
+                          'player_score': match.white_result, 'opponent_score': match.black_result,
+                          'player_color': 'W', 'opponent_color': 'B',
+                          'round': i, 'is_walkover': False})
+
+    #print(games)
+
+    swiss = Swiss(players, games, tournament_round_count(tournament_id))
+    swiss.make_it()
+
+    for i in range(len(swiss.pairs)):
+        print(swiss.pairs[i])
+        white_id = TournamentMember.objects.get(person__name=swiss.pairs[i][0]['name'].split()[0],
+                                                person__lastname=swiss.pairs[i][0]['name'].split()[1]).id
+        black_id = TournamentMember.objects.get(person__name=swiss.pairs[i][1]['name'].split()[0],
+                                                person__lastname=swiss.pairs[i][1]['name'].split()[1]).id
+        Match(round_id=Round.objects.filter(tournament_id=tournament_id).latest('round').id, chessboard=i + 1,
+              white_id=white_id, black_id=black_id).save()
 
 
 class IndexView(ListView):
@@ -28,11 +74,20 @@ class DetailTournament(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_member'] = TournamentMember.objects.filter(person=self.request.user.id, tournament=self.object.id)
+        context['members'] = TournamentMember.objects.filter(tournament_id=self.object.id)
         context['rounds'] = Round.objects.filter(tournament_id=self.object.id).values('id', 'round')
         context['round_count'] = round_count(self.object.id)
         context['last_round'] = False
         if context['rounds']:
             context['last_round'] = Round.objects.filter(tournament_id=self.object.id).latest('round')
+
+
+        """
+        for i in Account.objects.all():
+            if 'gmail.com' in i.email:
+                TournamentMember(tournament_id=37, person_id=i.id, title=Account.objects.get(pk=i.id).title).save() # fide rating
+        """
+
         return context
 
 
@@ -44,7 +99,7 @@ class MembersView(DetailView):
         context = super().get_context_data(**kwargs)
         context['members'] = sorted(TournamentMember.objects.filter(tournament=self.object.id),
                                     key=lambda x: (get_fide_rating(x.person.id, self.object.game_type),
-                                                   x.person.get_polish_rating()), reverse=True)
+                                                   x.person.get_rating()), reverse=True)
         members_id = [item.person.id for item in context['members']]
         context['fide'] = FideRating.objects.filter(person_id__in=members_id)
         return context
@@ -60,6 +115,7 @@ class ProfileView(DetailView):
         rounds = [item.id for item in Round.objects.filter(tournament_id=self.kwargs['pk'])]
         context['matches'] = Match.objects.filter(Q(white_id=self.kwargs['member_id']) |
                                                   Q(black_id=self.kwargs['member_id']), round_id__in=rounds)
+        print(context['matches'])
         return context
 
 
@@ -79,7 +135,7 @@ class CreateTournament(LoginRequiredMixin, SuccessMessageMixin, PermissionRequir
 
 class UpdateTournament(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Tournament
-    fields = ('name', 'start', 'end', 'address', 'round_number')
+    fields = ('name', 'start', 'end', 'city', 'round_number', 'description')
     template_name = 'tournaments/update.html'
 
     def get_success_url(self):
@@ -159,18 +215,27 @@ class RoundView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['matches'] = Match.objects.filter(round__tournament__id=self.kwargs['tournament_id'],
-                                                  round=self.kwargs['pk'])
+        context['matches'] = Match.objects.filter(round__tournament__id=self.kwargs['tournament_id'], round=self.kwargs['pk'])
+        context['rounds'] = Round.objects.filter(tournament_id=self.kwargs['tournament_id']).values('id', 'round')
         context['round_number'] = Round.objects.get(id=self.kwargs['pk']).round
         context['tournament'] = Tournament.objects.get(id=self.kwargs['tournament_id'])
         return context
 
 
 class CreateRound(LoginRequiredMixin, View):
+    # pk - tournament_id
     def post(self, request, pk):
+        game_system = Tournament.objects.get(pk=pk).game_system
+
         update_results(pk)
         create_round(pk)
-        create_pairing(pk)
+
+        if game_system == 'szwajcarski':
+            swiss_pairing(pk)
+        elif game_system == 'kołowy(rundowy)':
+            create_pairing(pk)
+        else:
+            print('Provided game system not found')
 
         url = reverse_lazy('detail_tournament', kwargs={'pk': pk})
         return HttpResponseRedirect(url)
@@ -195,7 +260,7 @@ class PlacementView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['members'] = sorted(TournamentMember.objects.filter(tournament=self.object.id),
                                     key=lambda x: (x.points, get_fide_rating(x.person.id, self.object.game_type),
-                                                   x.person.get_polish_rating()), reverse=True)
+                                                   x.person.get_rating()), reverse=True)
         members_id = [item.person.id for item in context['members']]
         context['fide'] = FideRating.objects.filter(person_id__in=members_id)
         return context
@@ -213,6 +278,8 @@ class StatisticsView(LoginRequiredMixin, DetailView):
 
 class StartTournamentView(LoginRequiredMixin, View):
     def post(self, request, pk):
+        game_system = Tournament.objects.get(pk=pk).game_system
+
         tournament = Tournament.objects.get(pk=pk)
         tournament.is_started = True
         tournament.save()
@@ -220,7 +287,12 @@ class StartTournamentView(LoginRequiredMixin, View):
         # create first round
         Round(tournament_id=pk, round=1).save()
 
-        create_pairing(pk)
+        if game_system == 'szwajcarski':
+            swiss_pairing(pk)
+        elif game_system == 'kołowy(rundowy)':
+            create_pairing(pk)
+        else:
+            print('Provided game system not found')
 
         # delete rest of applications
         Application.objects.filter(type_of_object='T', tournament_id=pk).delete()
@@ -237,7 +309,8 @@ class EndTournamentView(LoginRequiredMixin, View):
 
         update_results(pk)
 
-        update_categories(tournament)
+        if tournament.is_polish_rated:
+            set_participants_promotion(tournament)
 
         url = reverse_lazy('detail_tournament', kwargs={'pk': pk})
         return HttpResponseRedirect(url)
@@ -258,10 +331,8 @@ class IndexApplication(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['applications'] = Application.objects.filter(tournament_id=self.object.id)
-        context['has_application'] = Application.objects.filter(person_id=self.request.user.id,
-                                                                          tournament_id=self.object.id)
-        context['is_member'] = TournamentMember.objects.filter(person_id=self.request.user.id,
-                                                               tournament_id=self.object.id)
+        context['has_application'] = Application.objects.filter(person_id=self.request.user.id, tournament_id=self.object.id)
+        context['is_member'] = TournamentMember.objects.filter(person_id=self.request.user.id, tournament_id=self.object.id)
         return context
 
 

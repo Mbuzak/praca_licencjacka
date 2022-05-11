@@ -9,6 +9,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 
     {% load static %}
 	<link rel="stylesheet" type="text/css" href="{% static '/style.css' %}">
@@ -22,27 +23,21 @@
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">{{user.name}}</a>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <a href="{% url "profile" user.id %}" class="dropdown-item"><i class="fa fa-user-circle-o"></i>
-                            Profil</a>
+                            <a href="{% url "profile" user.id %}" class="dropdown-item"><i class="fa fa-user-circle-o"></i>Profil</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "home_tournaments" %}" class="dropdown-item"><i class="fa fa-trophy"></i>
-                            Turnieje</a>
+                            <a href="{% url "home_tournaments" %}" class="dropdown-item"><i class="fa fa-trophy"></i>Turnieje</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "home_club" %}" class="dropdown-item"><i class="fa fa-puzzle-piece"></i>
-                            Kluby</a>
+                            <a href="{% url "home_club" %}" class="dropdown-item"><i class="fa fa-puzzle-piece"></i>Kluby</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "home_accounts" %}" class="dropdown-item"><i class="fa fa-users"></i>
-                            Użytkownicy</a>
+                            <a href="{% url "home_accounts" %}" class="dropdown-item"><i class="fa fa-users"></i>Użytkownicy</a>
                             <div class="dropdown-divider"></div>
-                            <a href="{% url "logout" %}" class="dropdown-item"><i class="fa fa-sign-out"></i>
-                            Wyloguj</a>
+                            <a href="{% url "logout" %}" class="dropdown-item"><i class="fa fa-sign-out"></i>Wyloguj</a>
                         </>
                     </li>
                 </ul>
             </div>
         {% endif %}
     </nav>
-
 
     <div class="container">
         {% if messages %}

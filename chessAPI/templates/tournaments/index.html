@@ -4,23 +4,36 @@
 {% block content %}
 <p class="a">Turnieje</p>
 
-<div style="margin-bottom: 20px;">
-    <form style="display: inline;" action="{% url 'create_tournament' %}" method="get">
-        <button type="submit" class="btn btn-primary">Nowy turniej</button>
-    </form>
-    <form style="display: inline;" action="{% url 'addresses_create_address' %}" method="get">
-        <button type="submit" class="btn btn-primary">Nowy adres</button>
-    </form>
+{% if user.is_judge %}
+    <div style="margin-bottom: 20px;">
+        <form style="display: inline;" action="{% url 'create_tournament' %}" method="get">
+            <button type="submit" class="btn btn-primary">Nowy turniej</button>
+        </form>
+    </div>
+{% endif %}
+
+<p class="b">Najpopularniejsze turnieje</p>
+
+<p class="b">Planowane turnieje</p>
+
+<p class="b">W trakcie</p>
+
+<p class="b">Zakończone turnieje</p>
+
+<div class="inline">
+    zakończone
 </div>
+<div class="inline">trwające</div>
+<div class="inline">planowane</div>
+
 
 {% if object_list %}
-    <table id="tournaments">
+    <table id="tournaments" style="margin-top: 50px;">
         <tr>
             <th>Termin</th>
-            <th>Nazwa</th>
+            <th>Opis</th>
             <th>Miasto</th>
-            <th>Rodzaj</th>
-            <th>Turniej FIDE</th>
+            <th>Turniej PZSzach</th>
         </tr>
         {% for tournament in object_list %}
             <tr>
@@ -28,13 +41,20 @@
                     <p style="color: {{ tournament.color_status }}; line-height: 0.5;">{{ tournament.start|date:"d-m-Y" }}</p>
                     <p style="color: {{ tournament.color_status }}; line-height: 0.5; font-size: 12px;">{{ tournament.end|date:"d-m-Y" }}</p>
                 </td>
-                <td style="width: 500px;"><a href="{% url 'detail_tournament' tournament.id %}">{{ tournament.name }}</a></td>
-                <td>{{ tournament.address.city }}</td>
-                <td>{{ tournament.game_type }}</td>
-                <td>{{ tournament.is_fide|yesno:"FIDE, " }}</td>
+                <td style="width: 500px;">
+                    <a href="{% url 'detail_tournament' tournament.id %}" style="font-size: 18px;">{{ tournament.name }}</a> <br>
+                    {{ tournament.game_type }} ({{ tournament.game_rate }}), {{ tournament.count_members }} zawodników
+                </td>
+                <td>{{ tournament.city }}</td>
+                <td>
+                    {% if tournament.is_polish_rated %}
+                        <i class="fa fa-check" style="color: #25aa25"></i>
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
     </table>
 {% endif %}
 
 {% endblock %}
+

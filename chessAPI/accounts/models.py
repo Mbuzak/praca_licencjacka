@@ -3,14 +3,19 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.utils import timezone
 from clubs.models import Club
-from ratings.models import TITLE_CHOICES, TITLE, THRESHOLD, TITLE_TUPLE
+from ratings.models import TITLE_CHOICES, TITLE, THRESHOLD, TITLE_TUPLE, FIDE_TITLE, FIDE_TITLE_TUPLE
 from addresses.models import PROVINCE_CHOICES
+import datetime
 
 
 GENDER_CHOICES = [
     ('M', 'mężczyzna'),
     ('K', 'kobieta'),
 ]
+
+GENDER = {'M': 'male',
+          'K': 'female',
+          }
 
 
 class AccountManager(BaseUserManager):
@@ -57,8 +62,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(verbose_name="Imię", max_length=50, default='')
     lastname = models.CharField(verbose_name="Nazwisko", max_length=50, default='')
     gender = models.CharField(verbose_name="Płeć", max_length=10, choices=GENDER_CHOICES, default='')
-    born_year = models.IntegerField(verbose_name="Rok urodzenia", default=1970,
-                                    validators=[MinValueValidator(1900), MaxValueValidator(2200)])
+    born_year = models.SmallIntegerField(verbose_name="Rok urodzenia", default=1970,
+                                         validators=[MinValueValidator(1900), MaxValueValidator(2200)])
 
     province = models.CharField(verbose_name='Województwo', max_length=20, default='', blank=True,
                                 choices=PROVINCE_CHOICES())
@@ -79,30 +84,55 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.name + " " + self.lastname
 
-    def get_category(self):
+    def get_title(self):
         if self.title == 'b/k':
             return ''
         return self.title
 
-    def get_polish_rating(self):
-        if self.gender == 'M':
-            return TITLE['male'][self.title]
-        return TITLE['female'][self.title]
+    def get_rating(self):
+        if self.title in TITLE_TUPLE:
+            return TITLE[GENDER[self.gender]][self.title]
+        return FIDE_TITLE[GENDER[self.gender]][self.title]
 
-    def next_category(self):
-        next_pos = TITLE_TUPLE.index(self.title) + 1
-        if len(TITLE_TUPLE) == next_pos:
-            print('WARNING!!!') # TBD
-            return -1
-        else:
+    def next_title(self):
+        if self.title in TITLE_TUPLE:
+            next_pos = TITLE_TUPLE.index(self.title) + 1
+            if len(TITLE_TUPLE) == next_pos:
+                print('WARNING!!!')  # TBD
+                return None
             return TITLE_TUPLE[next_pos]
+        else:
+            next_pos = FIDE_TITLE_TUPLE[GENDER[self.gender]].index(self.title) + 1
+            if len(TITLE_TUPLE) == next_pos:
+                print('WARNING!!!')  # TBD
+                return None
+            return FIDE_TITLE_TUPLE[GENDER[self.gender]][next_pos]
 
     def next_threshold(self):
-        next_category = self.next_category()
-        if next_category != -1:
-            if self.gender == 'M':
-                return THRESHOLD['male'][next_category]
-            return THRESHOLD['female'][next_category]
+        next_title = self.next_title()
+        if next_title:
+            if next_title in TITLE_TUPLE:
+                return THRESHOLD[GENDER[self.gender]][next_title]
+            else:
+                return FIDE_TITLE[GENDER[self.gender]][next_title]
         else:
             print('WARNING') # tbd
-            return -1
+            return None
+
+    def is_judge(self):
+        if self.is_superuser:
+            return True
+        return self.groups.filter(name='Judge').exists()
+
+    def is_WZSzach_engineer(self):
+        if self.is_superuser:
+            return True
+        return self.groups.filter(name='WZSzach enginner').exists()
+
+    def is_instructor(self):
+        if self.is_superuser:
+            return True
+        return self.groups.filter(name='Instructor').exists()
+
+    def get_age(self):
+        return datetime.date.today().year - self.born_year

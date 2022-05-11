@@ -3,14 +3,19 @@
 
 {% block content %}
 <p class="a">Kluby szachowe</p>
-<div style="margin-bottom: 20px;">
-    <form style="display: inline;" action="{% url 'create_club' %}" method="get">
-        <button type="submit" class="btn btn-primary">Nowy klub</button>
-    </form>
-    <form style="display: inline;" action="{% url 'addresses_create_address' %}" method="get">
-        <button type="submit" class="btn btn-primary">Nowy adres</button>
-    </form>
-</div>
+
+{% if user.is_instructor %}
+    <div style="margin-bottom: 20px;">
+        <form style="display: inline;" action="{% url 'create_club' %}" method="get">
+            <button type="submit" class="btn btn-primary">Nowy klub</button>
+        </form>
+
+        <form style="display: inline;" action="{% url 'addresses_create_address' %}" method="get">
+            <button type="submit" class="btn btn-primary">Nowy adres</button>
+        </form>
+    </div>
+{% endif %}
+
 {% if object_list %}
     <table id="tournaments">
         <tr>

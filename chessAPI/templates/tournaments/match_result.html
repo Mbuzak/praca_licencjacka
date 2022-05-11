@@ -3,11 +3,21 @@
 
 
 {% block content %}
+
+<p class="a">Rezultat meczu</p>
+<p class="b">Runda {{ match.round.round }}</p>
+<p class="b">Szachownica {{ match.chessboard }}</p>
+
+
 <div class="col-md-4">
-  	<form method="POST">
-		<h2>Edycja turnieju</h2>
+  	<form method="post">
 		{% csrf_token %}
-		{{ form |crispy }}
+
+		<p class="c">{{ match.white.person }} <i class="fa fa-square-o"></i></p>
+		{{ form.white_result |as_crispy_field }}
+
+		<p class="c">{{ match.black.person }} <i class="fa fa-square"></i></p>
+		{{ form.black_result |as_crispy_field }}
 		<button type="sumbit" class="btn btn-primary">Zapisz</button>
 	</form>
 </div>

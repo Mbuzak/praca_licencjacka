@@ -54,14 +54,29 @@
         <p class="a">{{ tournament.name }}</p>
         {% block description %} {% endblock description %}
         <hr style="width: 30%; text-align: left; margin-left: 0; height: 2px; color: #9e9e9e; background-color: #9e9e9e;">
-
         <div style="margin-bottom: 20px;">
-            <a href="{% url 'detail_tournament' tournament.id %}">Strona domowa</a>
-            <a href="{% url 'tournaments_placement' tournament.id %}">Punktacja</a>
-            <a href="{% url 'tournament_members' tournament.id %}">Lista startowa</a>
-            <a href="{% url 'detail_tournament_application' tournament.id %}">Zgłoszenia</a>
-            <a href="{% url 'tournaments_statistics' tournament.id %}">Statystyka</a>
+            <form method="get" action="{% url 'detail_tournament' tournament.id %}">
+                <button type="submit" class="tournament-nav">Strona domowa</button>
+            </form>
+
+            <form method="get" action="{% url 'tournaments_placement' tournament.id %}">
+                <button type="submit" class="tournament-nav">Punktacja</button>
+            </form>
+
+            <form method="get" action="{% url 'tournament_members' tournament.id %}">
+                <button type="submit" class="tournament-nav">Lista startowa</button>
+            </form>
+
+            <form method="get" action="{% url 'detail_tournament_application' tournament.id %}">
+                <button type="submit" class="tournament-nav">Zgłoszenia</button>
+            </form>
+
+            <form method="get" action="{% url 'tournaments_statistics' tournament.id %}">
+                <button type="submit" class="tournament-nav">Statystyka</button>
+            </form>
         </div>
+
+        <div style="clear: both; height: 20px;"></div>
 
         {% block content %} {% endblock %}
     </div>

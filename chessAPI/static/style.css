@@ -57,6 +57,7 @@ a {
 	box-shadow: 3px 3px #4e4e4e;
 	background-color: #f0f0f0;
 	text-align: center;
+
 }
 
 #tournaments td, #tournaments th {
@@ -155,10 +156,59 @@ p.inline {
 }
 
 p.chess-title {
-    font-size: 20px;
+    font-size: 14px;
+    padding: 3px;
     font-family: Copperplate;
+    background-color: #bebebe;
+    border-radius: 5px;
 }
 
 .inline {
     display: inline-block;
+}
+
+.tournament-nav {
+    background-color: #2505c0;
+
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+
+    display: inline-block;
+    height: 60px;
+    width: 200px;
+    float: left;
+    border-color: #000aaa;
+}
+
+.tournament-nav:hover {
+    background-color: #2505ff;
+}
+
+#tournament-round-header {
+    color: #ffffff;
+    padding: 8px 14px;
+
+    background-color:
+    #afafaf; width: 80px;
+    height: 40px;
+    float: left;
+}
+
+.tournament-rounds {
+    background-color: #afafaf;
+
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+
+    display: inline-block;
+    height: 40px;
+    width: 60px;
+    float: left;
+    border-color: #e0e0e0;
+}
+
+.tournament-rounds:hover {
+    background-color: #cfcfcf;
 }
