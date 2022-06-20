@@ -3,14 +3,10 @@
 
 {% block content %}
 
-<div class="card">
+<div class="card" style="widgth: 800px;">
     <div class="card-body">
         <h4 class="card-title">Rejestracja</h4>
-        <form method="post">
-            {% csrf_token %}
-            {{form|crispy}}
-            <button type="submit" class="btn btn-primary btn-block">Zarejestruj się</button>
-        </form>
+        {% crispy form %}
     </div>
 </div>
 {% endblock content %}

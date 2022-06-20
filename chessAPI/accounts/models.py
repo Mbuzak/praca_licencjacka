@@ -4,7 +4,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from clubs.models import Club
 from ratings.models import TITLE_CHOICES, TITLE, THRESHOLD, TITLE_TUPLE, FIDE_TITLE, FIDE_TITLE_TUPLE
-from addresses.models import PROVINCE_CHOICES
 import datetime
 
 
@@ -16,6 +15,25 @@ GENDER_CHOICES = [
 GENDER = {'M': 'male',
           'K': 'female',
           }
+
+PROVINCE_CHOICES = (
+    ('pomorskie', 'pomorskie'),
+    ('zachodnio-pomorskie', 'zachodnio-pomorskie'),
+    ('kujawsko-pomorskie', 'kujawsko-pomorskie'),
+    ('warmińsko-mazurskie', 'warmińsko-mazurskie'),
+    ('mazowieckie', 'mazowieckie'),
+    ('małopolskie', 'małopolskie'),
+    ('lubelskie', 'lubelskie'),
+    ('lubuskie', 'lubuskie'),
+    ('opolskie', 'opolskie'),
+    ('dolnośląskie', 'dolnośląskie'),
+    ('śląskie', 'śląskie'),
+    ('wielkopolskie', 'wielkopolskie'),
+    ('podlaskie', 'podlaskie'),
+    ('łódzkie', 'łódzkie'),
+    ('podkarpackie', 'podkarpackie'),
+    ('świętokrzyskie', 'świętokrzyskie'),
+)
 
 
 class AccountManager(BaseUserManager):
@@ -33,11 +51,6 @@ class AccountManager(BaseUserManager):
                           province=province, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
-
-        g = Group.objects.get(name='Judge')
-        p = Permission.objects.get(codename='add_tournament')
-        user.groups.add(g)
-        user.user_permissions.add(p)
         return user
 
     def create_user(self, email, name, lastname, gender, born_year, province, password=None, **extra_fields):
@@ -65,16 +78,14 @@ class Account(AbstractBaseUser, PermissionsMixin):
     born_year = models.SmallIntegerField(verbose_name="Rok urodzenia", default=1970,
                                          validators=[MinValueValidator(1900), MaxValueValidator(2200)])
 
-    province = models.CharField(verbose_name='Województwo', max_length=20, default='', blank=True,
-                                choices=PROVINCE_CHOICES())
-    picture = models.ImageField(blank=True, null=True)
+    province = models.CharField(verbose_name='Województwo', max_length=20, choices=PROVINCE_CHOICES)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(null=True)
     club = models.ForeignKey(Club, on_delete=models.CASCADE, blank=True, null=True, default=None,
                              related_name='accounts')
-    title = models.CharField(max_length=10, choices=TITLE_CHOICES, default='b/k')
+    title = models.CharField(max_length=10, default='b/k')  #  choices=TITLE_CHOICES
 
     objects = AccountManager()
 

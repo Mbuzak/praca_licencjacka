@@ -4,7 +4,7 @@ from .models import *
 
 class TournamentAdmin(admin.ModelAdmin):
     fieldsets = [
-        ('Tournament', {'fields': ['name', 'start', 'end', 'city']}),
+        ('Tournament', {'fields': ['name', 'start', 'end', 'place']}),
         ('Game details', {'fields': ['game_rate', 'game_system', 'is_polish_rated', 'game_type', 'round_number']}),
         ('Organizer', {'fields': ['judge', 'organizer']}),
         (None, {'fields': ['is_started', 'is_ended']}),

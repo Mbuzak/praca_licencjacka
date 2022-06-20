@@ -12,7 +12,7 @@ class TournamentForm(forms.ModelForm):
     class Meta:
         model = Tournament
         fields = ('name', 'start', 'end', 'game_system', 'game_rate', 'game_type', 'is_polish_rated', 'round_number',
-                  'city', 'organizer', 'description')
+                  'place', 'organizer', 'description')
         widgets = {'start': DateInput(),
                    'end': DateInput(),
                    }
@@ -26,7 +26,7 @@ class TournamentForm(forms.ModelForm):
                 css_class='form_row'
             ),
             Row(
-                Column('city', css_class='form-group col-md-3 mb-4'),
+                Column('place', css_class='form-group col-md-6'),
                 Column('organizer', css_class='form-group col-md-4'),
                 css_class='form_row'
             ),

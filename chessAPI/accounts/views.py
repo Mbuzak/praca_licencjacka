@@ -43,7 +43,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_tournaments'] = TournamentMember.objects.filter(person=self.kwargs['pk'])
-        context['fide_history'] = FideHistory.objects.filter(person_id=self.kwargs['pk'])
+        context['fide_history'] = FideHistory.objects.filter(person_id=self.kwargs['pk']).order_by('period__change')
         history = TournamentMember.objects.filter(person=self.kwargs['pk'],
                                                   tournament__is_ended=True).order_by('tournament__start', 'tournament__end')[0:5]
         context['latest_tournaments'] = history

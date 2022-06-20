@@ -13,6 +13,7 @@ from ratings.models import FideRating
 from .pairing_system import create_pairing, create_round, get_fide_rating, update_results, round_count, set_participants_promotion
 from joinment.models import Application
 from .pypair import Swiss
+from .filters import TournamentFilter
 
 
 def tournament_round_count(tournament_id):
@@ -66,6 +67,11 @@ class IndexView(ListView):
     # context_object_name = 'tournaments'
     # paginate_by = 30
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = TournamentFilter(self.request.GET, queryset=self.get_queryset())
+        return context
+
 
 class DetailTournament(DetailView):
     model = Tournament
@@ -81,6 +87,9 @@ class DetailTournament(DetailView):
         if context['rounds']:
             context['last_round'] = Round.objects.filter(tournament_id=self.object.id).latest('round')
 
+        matches = Match.objects.filter(round__tournament__id=self.object.id)
+        context['incompleted_matches'] = len([[x.white_result, x.black_result] for x in matches
+                                              if x.white_result is None or x.black_result is None])
 
         """
         for i in Account.objects.all():
@@ -135,7 +144,7 @@ class CreateTournament(LoginRequiredMixin, SuccessMessageMixin, PermissionRequir
 
 class UpdateTournament(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Tournament
-    fields = ('name', 'start', 'end', 'city', 'round_number', 'description')
+    fields = ('name', 'start', 'end', 'place', 'round_number', 'description')
     template_name = 'tournaments/update.html'
 
     def get_success_url(self):

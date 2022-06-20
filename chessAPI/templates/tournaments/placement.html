@@ -14,7 +14,6 @@
         <th>FIDE</th>
         <th>Ranking</th>
         <th>Klub</th>
-        <th>Data ur.</th>
         <th>Punkty</th>
     </tr>
     {% for member in members %}
@@ -27,7 +26,6 @@
             </td>
             <td>{{ member.get_rating }}</td>
             <td>{{ member.person.club|default_if_none:"" }}</td>
-            <td>{{ member.person.born_year }}</td>
             <td>{{ member.points }}</td>
         </tr>
     {% endfor %}

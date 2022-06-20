@@ -6,6 +6,16 @@
 {% endblock description %}
 
 {% block content %}
+<p class="inline">Liczba zawodników</p>
+<p class="a inline" id="people"></p>
+
+<div class="clear-float"></div>
+
+<p class="inline">Średnia wieku</p>
+<p class="a inline" id="average_age"></p>
+
+<div class="clear-float"></div>
+
 
 <div class="info-block1">
     <canvas id="bar-chart" width="800" height="450"></canvas>
@@ -15,8 +25,16 @@
     <canvas id="age-chart" width="800" height="450"></canvas>
 </div>
 
-Liczba zawodników
-<p id="people"></p>
+<script>
+    var age_sum = 0;
+    var year = new Date().getFullYear();
+
+    {% for member in members %}
+        age_sum += {{ member.person.born_year }};
+    {% endfor %}
+
+    document.getElementById("average_age").innerHTML = Math.round(year - (age_sum / {{ members.count }}));
+</script>
 
 <script>
     var people = 0;
@@ -55,7 +73,7 @@ var x = new Chart(document.getElementById("bar-chart"), {
       labels: ["mężczyzna", "kobieta"],
       datasets: [
         {
-          backgroundColor: ["#3e95cd", "#8e5ea2"],
+          backgroundColor: ["#5555dd", "#dd5555"],
           data: [male,female]
         }
       ]
@@ -77,7 +95,7 @@ var x = new Chart(document.getElementById("age-chart"), {
       labels: ["junior", "senior"],
       datasets: [
         {
-          backgroundColor: ["#3e95cd", "#8e5ea2"],
+          backgroundColor: ["#55dd55", "#6b7aa0"],
           data: [junior, senior]
         }
       ]

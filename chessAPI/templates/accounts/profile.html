@@ -9,15 +9,10 @@
     <p class="chess-title inline">{{ account.get_title }}</p>
 {% endif %}
 
-
-
-
 <hr style="width: 30%; text-align: left; margin-left: 0; height: 2px; color: #9e9e9e; background-color: #9e9e9e;">
 
-<p>
-    <i class="fa fa-map-marker"></i>
-    {{ account.province }}
-</p>
+<p class="c"><i class="fa fa-map-marker"></i> {{ account.province }}</p>
+<p class="c"><i class="fa fa-calendar"></i> {{ account.date_joined|date:"d.m.Y" }}</p>
 
 <div class="info-block1">
     <p style="font-size: 24px; padding-top: 20px;">Ranking PZSzach</p>
@@ -73,6 +68,12 @@
     </div>
 {% endif %}
 
+<p class="a">Turnieje użytkownika</p>
+<p>Najwyższe osiągnięcia</p>
+{% for tournament in history %}
+    <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
+{% endfor %}
+
 <p>Planowane</p>
 {% for tournament in active_tournaments %}
     {% if tournament.tournament.status == "coming soon" %}
@@ -85,11 +86,6 @@
     {% if tournament.tournament.status == "ongoing" %}
         <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
     {% endif %}
-{% endfor %}
-
-<p>Ukończone (5 ostatnich)</p>
-{% for tournament in history %}
-    <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
 {% endfor %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

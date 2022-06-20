@@ -34,7 +34,7 @@ class DetailClub(DetailView):
 
 class CreateClub(LoginRequiredMixin, SuccessMessageMixin, PermissionRequiredMixin, CreateView):
     model = Club
-    fields = ('name', 'email', 'address')
+    fields = ('name', 'email', 'place')
     template_name = 'clubs/create.html'
     success_url = reverse_lazy('home_club')
     permission_required = ('add_club',)
@@ -50,7 +50,7 @@ class CreateClub(LoginRequiredMixin, SuccessMessageMixin, PermissionRequiredMixi
 class UpdateClub(LoginRequiredMixin, SuccessMessageMixin, PermissionRequiredMixin, UpdateView):
     model = Club
     template_name = 'clubs/update.html'
-    fields = ('name', 'email', 'address')
+    fields = ('name', 'email', 'place')
     success_url = reverse_lazy('home_club')
     permission_required = ('change_club',)
 

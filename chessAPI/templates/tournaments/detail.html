@@ -26,7 +26,7 @@
     </p>
     <p class="c">
         <i class="fa fa-map-marker"></i>
-        {{ tournament.city }}
+        {{ tournament.place }}
     </p>
 
     <p>
@@ -72,8 +72,6 @@
 
 {{ tournament.description|linebreaks }}
 
-<p id="average_age"></p>
-
 {% if is_member %}
     {% for i in is_member %}
         <form method="get" action="{% url 'leave_tournament' i.id %}">
@@ -89,19 +87,16 @@
                 <form method="get" action="{% url 'tournaments_end_tournament' tournament.id %}" style="display: inline;">
                     <button type="submit" class="btn btn-danger">Zakończ turniej</button>
                 </form>
-
-                <form method="get" action="{% url 'update_tournament' tournament.id %}" style="display: inline;">
-                    <button style="display: inline-block;" type="submit" class="btn btn-primary">Edycja</button>
-                </form>
             {% else %}
-                <form method="post" action="{% url 'create_round' tournament.id %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button class="btn btn-success confirm-create-round">Nowa runda</button>
-                </form>
+                {% if incompleted_matches == 0 %}
+                    <form method="post" action="{% url 'create_round' tournament.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button class="btn btn-success confirm-create-round">Nowa runda</button>
+                    </form>
+                {% else %}
+                    <p class="b" style="color: #cc1111;">Ilość meczy do uzupełnienia {{ incompleted_matches }}</p>
+                {% endif %}
 
-                <form method="get" action="{% url 'update_tournament' tournament.id %}" style="display: inline;">
-                    <button style="display: inline-block;" type="submit" class="btn btn-primary">Edycja</button>
-                </form>
             {% endif %}
         {% endif %}
     {% else %}
@@ -110,16 +105,17 @@
             <button class="btn btn-primary confirm-begin-tournament">Rozpocznij turniej</button>
         </form>
 
-        <form method="get" action="{% url 'update_tournament' tournament.id %}" style="display: inline;">
-            <button style="display: inline-block;" type="submit" class="btn btn-primary">Edycja</button>
-        </form>
-
         <form method="post" action="{% url 'delete_tournament' tournament.id %}" style="display: inline;">
             {% csrf_token %}
             <button class="btn btn-danger confirm-delete-tournament">Usuń</button>
         </form>
     {% endif %}
+
+    <form method="get" action="{% url 'update_tournament' tournament.id %}" style="display: inline;">
+        <button style="display: inline-block;" type="submit" class="btn btn-primary">Edycja</button>
+    </form>
 {% endif %}
+
 
 <script>
     $(document).on('click', '.confirm-delete-tournament', function(){
@@ -135,16 +131,5 @@
     })
 
 
-</script>
-
-<script>
-    var age_sum = 0;
-    var year = new Date().getFullYear();
-
-    {% for member in members %}
-        age_sum += {{ member.person.born_year }};
-    {% endfor %}
-
-    document.getElementById("average_age").innerHTML = Math.round(year - (age_sum / {{ members.count }}));
 </script>
 {% endblock content %}

@@ -9,10 +9,6 @@
         <form style="display: inline;" action="{% url 'create_club' %}" method="get">
             <button type="submit" class="btn btn-primary">Nowy klub</button>
         </form>
-
-        <form style="display: inline;" action="{% url 'addresses_create_address' %}" method="get">
-            <button type="submit" class="btn btn-primary">Nowy adres</button>
-        </form>
     </div>
 {% endif %}
 
@@ -20,15 +16,14 @@
     <table id="tournaments">
         <tr>
             <th>Nazwa</th>
-            <th>Województwo</th>
-            <th>Miasto</th>
+            <th>Miejsce</th>
             <th>Menadżer</th>
         </tr>
         {% for club in object_list %}
+
             <tr>
-                <td style="width: 300px;"><a href="/clubs/{{ club.id }}/">{{ club.name }}</a></td>
-                <td>{{ club.address.province }}</td>
-                <td style="width: 200px;">{{ club.address.city }}</td>
+                <td style="width: 300px;"><a href="/clubs/{{ club.id }}/">{{ club.name }}</a><br>{{ club.count_members }} członków</td>
+                <td>{{ club.get_province }}, {{ club.get_city }}</td>
                 <td style="width: 200px;">{{ club.manager }}</td>
             </tr>
         {% endfor %}

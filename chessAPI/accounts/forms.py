@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth import login, authenticate
 from accounts.models import Account
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column
 
 
 class RegisterForm(UserCreationForm):
@@ -9,15 +11,33 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = Account
-        fields = (
-            'email',
-            'name',
-            'lastname',
-            'gender',
-            'born_year',
-            'province',
-            'password1',
-            'password2',
+        fields = ('email', 'name', 'lastname', 'gender', 'born_year', 'province', 'password1', 'password2',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('email', css_class='form-group col-md-6'),
+                css_class='form_row'
+            ),
+            Row(
+                Column('name', css_class='form-group col-md-5'),
+                Column('lastname', css_class='form-group col-md-4'),
+                css_class='form_row'
+            ),
+            Row(
+                Column('gender', css_class='form-group col-md-4'),
+                Column('born_year', css_class='form-group col-md-4'),
+                Column('province', css_class='form-group col-md-4'),
+                css_class='form_row'
+            ),
+            Row(
+                Column('password1', css_class='form-group col-md-6'),
+                Column('password2', css_class='form-group col-md-4'),
+                css_class='form_row'
+            ),
+            Submit('submit', 'Zarejestruj się')
         )
 
     def save(self, commit=True):
@@ -37,12 +57,4 @@ class RegisterForm(UserCreationForm):
 class EditProfileForm(UserChangeForm):
     class Meta:
         model = Account
-        fields = ('email',
-                  'name',
-                  'lastname',
-                  'gender',
-                  'born_year',
-                  'province',
-                  'password',
-                  )
-
+        fields = ('email', 'name', 'lastname', 'gender', 'born_year', 'province', 'password',)

@@ -19,7 +19,7 @@
 <p class="b">Kontakt</p>
 <p class="c">
     <i class="fa fa-map-marker"></i>
-    {{ club.address.city }}, ul. {{ club.address.street }}
+    {{ club.place }}
 </p>
 <p>
     <i class="fa fa-envelope"></i>
@@ -46,7 +46,7 @@
         <div>{{ forloop.counter }}</div>
         <div>{{ member }}</div>
         <div>{{ member.province }}</div>
-        <div>{{ member.title }}</div>
+        <div>{{ member.get_title }}</div>
         <div>{{ member.fiderating.classic }}</div>
         <div class="row-border"></div>
     {% endfor %}

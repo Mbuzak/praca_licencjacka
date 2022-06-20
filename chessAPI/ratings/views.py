@@ -41,7 +41,12 @@ def update_fide_history(fide_rating):
 def fide_profile(number):
     path = requests.get(f'https://ratings.fide.com/profile/{number}').text
     parser = HTMLParser(html=path)
-    parsed_text = parser.css('.profile-top-rating-dataCont')[0].text().strip()
+    try:
+        parsed_text = parser.css('.profile-top-rating-dataCont')[0].text().strip()
+    except IndexError:
+        print('taki numer nie istnieje')
+        return -1
+
     regex_text = re.split(r'\s{2,}', parsed_text)
 
     for i in [1, 3, 5]:
@@ -56,6 +61,9 @@ def fide_profile(number):
 
 def update_fide(fide_rating):
     profile = fide_profile(fide_rating.fide_number)
+
+    if profile == -1:
+        return -1
 
     fide_rating.classic = profile[1]
     fide_rating.rapid = profile[3]
@@ -92,6 +100,9 @@ class CreateFideView(LoginRequiredMixin, CreateView):
         form.instance.person = account
 
         profile = fide_profile(form.instance.fide_number)
+
+        if profile == -1 or form.instance.fide_number in [obj.fide_number for obj in FideRating.objects.all()]:
+            return super(CreateFideView, self).form_invalid(form)
 
         form.instance.classic = profile[1]
         form.instance.rapid = profile[3]

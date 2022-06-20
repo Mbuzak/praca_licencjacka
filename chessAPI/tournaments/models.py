@@ -4,21 +4,27 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, MaxLengthValidator
 from ratings.models import TITLE, FIDE_TITLE, TITLE_TUPLE
 from accounts.models import GENDER
-
-
-GAME_TYPE_CHOICES = [
-    ('błyskawiczny', 'błyskawiczny'),
-    ('szybki', 'szybki'),
-    ('klasyczny', 'klasyczny'),
-]
-
-GAME_SYSTEM_CHOICES = [
-    ('szwajcarski', 'szwajcarski'),
-    ('kołowy(rundowy)', 'kołowy(rundowy)'),
-]
+from django.core.validators import RegexValidator
 
 
 class Tournament(models.Model):
+    GAME_TYPE_CHOICES = [
+        ('błyskawiczny', 'błyskawiczny'),
+        ('szybki', 'szybki'),
+        ('klasyczny', 'klasyczny'),
+    ]
+
+    GAME_SYSTEM_CHOICES = [
+        ('szwajcarski', 'szwajcarski'),
+        ('kołowy(rundowy)', 'kołowy(rundowy)'),
+    ]
+
+    STATUS_CHOICES = [
+        ('trwające', 'trwające'),
+        ('zakończone', 'zakończone'),
+        ('planowane', 'planowane'),
+    ]
+
     name = models.CharField(verbose_name='Nazwa turnieju', max_length=100, unique=True, default='')
     start = models.DateField(verbose_name='Data rozpoczęcia', default=datetime.date.today)
     end = models.DateField(verbose_name='Data zakończenia', default=datetime.date.today)
@@ -30,7 +36,8 @@ class Tournament(models.Model):
     game_type = models.CharField(verbose_name='Rodzaj gry', choices=GAME_TYPE_CHOICES, max_length=20, default='')
     is_polish_rated = models.BooleanField(verbose_name='Czy turniej jest zgłoszony do oceny PZSzach', default=False)
 
-    city = models.CharField(verbose_name='Miasto', max_length=50, blank=True, default='')
+    place = models.CharField(verbose_name='Miejsce', max_length=100, blank=True, default='',
+                             validators=[RegexValidator(r'\D*, \D*, .*', message='województwo, miasto, ulica')])
     organizer = models.CharField(verbose_name='Organizator', max_length=100, default='')
     judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Sędzia', default='')
 
@@ -45,17 +52,28 @@ class Tournament(models.Model):
 
     def status(self):
         if datetime.date.today() < self.start:
-            return 'coming soon'
+            return 'planowane'
         elif datetime.date.today() > self.end:
-            return 'ended'
-        return 'ongoing'
-
-    def color_status(self):
-        colors = {'ongoing': '#0000bb', 'ended': '#bb0000', 'coming soon': '#00bb00'}
-        return colors[self.status()]
+            return 'zakończone'
+        return 'trwające'
 
     def count_members(self):
         return len(TournamentMember.objects.filter(tournament_id=self.pk))
+
+    def get_province(self):
+        if len(self.place) > 0:
+            return self.place.split(',')[0]
+        return ''
+
+    def get_city(self):
+        if len(self.place) > 0:
+            return self.place.split(',')[1]
+        return ''
+
+    def get_street(self):
+        if len(self.place) > 0:
+            return self.place.split(',')[2]
+        return ''
 
 
 class TournamentMember(models.Model):
@@ -88,14 +106,6 @@ class Round(models.Model):
 
 
 class Match(models.Model):
-    GAME_RESULT_CHOICES = [
-        ('1', '1'),
-        ('0.5', '0.5'),
-        ('0', '0'),
-        ('+', '+'),
-        ('-', '-'),
-    ]
-
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
     chessboard = models.SmallIntegerField()
 

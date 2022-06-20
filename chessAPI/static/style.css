@@ -1,5 +1,7 @@
 body {
-    background-color: #eeeeee;
+    background: url("/static/images/background.png");
+    background-size: 1600px;
+    background-attachment: fixed;
     color: #000000;
     font-size: 16px;
 }
@@ -118,7 +120,6 @@ a {
 }
 
 .container {
-    position: relative;
 	background-color: #ffffff;
 	margin-top: 100px;
 	margin-left: 150px;
@@ -130,8 +131,8 @@ a {
 }
 
 .info-block1 {
-    position: relative;
     display: inline-block;
+    padding: 10px;
     width: 60ch;
     box-sizing: border-box;
     float: left;
@@ -211,4 +212,13 @@ p.chess-title {
 
 .tournament-rounds:hover {
     background-color: #cfcfcf;
+}
+
+.vl {
+    border-right: 1px solid #ababab;
+    height: 500px;
+}
+
+.header-size {
+    font-size: 20px;
 }

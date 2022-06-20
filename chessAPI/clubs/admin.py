@@ -4,7 +4,7 @@ from .models import *
 
 class ClubAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['name', 'email', 'registration', 'manager', 'address']}),
+        (None, {'fields': ['name', 'email', 'registration', 'manager', 'place']}),
     ]
     list_display = ('name', 'email', 'registration', 'manager')
     list_filter = ('name', )
