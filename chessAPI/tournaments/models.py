@@ -37,7 +37,8 @@ class Tournament(models.Model):
     is_polish_rated = models.BooleanField(verbose_name='Czy turniej jest zgłoszony do oceny PZSzach', default=False)
 
     place = models.CharField(verbose_name='Miejsce', max_length=100, blank=True, default='',
-                             validators=[RegexValidator(r'\D*, \D*, .*', message='województwo, miasto, ulica')])
+                             validators=[RegexValidator(r'\D*, \D*, .*', message='województwo, miasto, ulica')],
+                             help_text='Województwo, Miasto, Ulica np. Kujawsko-pomorskie, Toruń, ul. Biała 1')
     organizer = models.CharField(verbose_name='Organizator', max_length=100, default='')
     judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Sędzia', default='')
 
@@ -112,11 +113,17 @@ class Match(models.Model):
     white = models.ForeignKey(TournamentMember, on_delete=models.CASCADE, related_name='match_white')
     black = models.ForeignKey(TournamentMember, on_delete=models.CASCADE, related_name='match_black')
 
-    white_result = models.FloatField(verbose_name='Wynik', blank=True, null=True)
-    black_result = models.FloatField(verbose_name='Wynik', blank=True, null=True)
+    white_result = models.FloatField(verbose_name='Wynik', blank=True, null=True, help_text="{1, 0,5, 0}")
+    black_result = models.FloatField(verbose_name='Wynik', blank=True, null=True, help_text="{1, 0,5, 0}")
 
 
 class Promotion(models.Model):
+    STATUS_CHOICES = [
+        ('awaiting', 'awaiting'),
+        ('declined', 'declined'),
+        ('accepted', 'accepted')
+    ]
+
     participant = models.OneToOneField(TournamentMember, on_delete=models.CASCADE, related_name='participant')
     title = models.CharField(max_length=10)
-    status = models.BooleanField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_CHOICES[0])

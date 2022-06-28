@@ -1,3 +1,5 @@
+
+'''
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, CreateView, UpdateView
@@ -12,3 +14,4 @@ class CreateAddress(LoginRequiredMixin, SuccessMessageMixin, PermissionRequiredM
     success_url = reverse_lazy('home_tournaments')
     success_message = 'Pomyślnie dodano nowy adres'
     permission_required = ('add_address',)
+'''

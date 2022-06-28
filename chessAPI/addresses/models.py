@@ -1,4 +1,6 @@
 from django.db import models
+
+'''
 from model_helpers import Choices
 
 
@@ -21,9 +23,9 @@ PROVINCE_CHOICES = Choices({
     'podkarpackie': 'PK',
 })
 
-
+'''
 class Address(models.Model):
-    province = models.CharField(verbose_name='Województwo', max_length=20, default='', choices=PROVINCE_CHOICES())
+    province = models.CharField(verbose_name='Województwo', max_length=20, default='')
     city = models.CharField(verbose_name='Miasto', max_length=50, default='')
     street = models.CharField(verbose_name='Ulica', max_length=50, default='')
 

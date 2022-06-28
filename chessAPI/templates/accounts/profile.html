@@ -76,17 +76,18 @@
 
 <p>Planowane</p>
 {% for tournament in active_tournaments %}
-    {% if tournament.tournament.status == "coming soon" %}
+    {% if tournament.tournament.status == "planowane" %}
         <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
     {% endif %}
 {% endfor %}
 
 <p>W trakcie</p>
 {% for tournament in active_tournaments %}
-    {% if tournament.tournament.status == "ongoing" %}
+    {% if tournament.tournament.status == "trwające" %}
         <p><a href="{% url 'detail_tournament' tournament.tournament.id %}">{{ tournament.tournament }}</a></p>
     {% endif %}
 {% endfor %}
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 

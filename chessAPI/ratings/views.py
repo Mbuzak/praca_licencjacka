@@ -44,7 +44,6 @@ def fide_profile(number):
     try:
         parsed_text = parser.css('.profile-top-rating-dataCont')[0].text().strip()
     except IndexError:
-        print('taki numer nie istnieje')
         return -1
 
     regex_text = re.split(r'\s{2,}', parsed_text)

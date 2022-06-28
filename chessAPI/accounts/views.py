@@ -9,7 +9,7 @@ from ratings.models import FideHistory, FidePeriod
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from datetime import datetime
-from tournaments.pairing_system import verify_promotion
+from tournaments.calculate import verify_promotion
 
 
 class RegisterView(CreateView):
@@ -31,7 +31,7 @@ class IndexView(ListView):
         latest_period = FidePeriod.objects.latest('year', 'month')
         if latest_period.month == datetime.now().month and latest_period.year == datetime.now().year:
             context['latest_period'] = False
-        context['promotions'] = Promotion.objects.filter(status=False)
+        context['promotions'] = Promotion.objects.filter(status='awaiting')
 
         return context
 
@@ -48,6 +48,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
                                                   tournament__is_ended=True).order_by('tournament__start', 'tournament__end')[0:5]
         context['latest_tournaments'] = history
 
+        '''
         print(self.request.user)
 
         #u = Account.objects.get(pk=self.request.user.id)
@@ -69,6 +70,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         print(u.has_perm('tournaments.add_tournament'))
         print(u.has_perm('tournaments.create_tournament'))
         print(u.has_perm(p))
+        '''
         return context
 
 
@@ -78,6 +80,18 @@ class UpdateCategory(LoginRequiredMixin, PermissionRequiredMixin, View):
     def get(self, request, pk):
         promotion = Promotion.objects.get(pk=pk)
         verify_promotion(promotion)
+
+        url = reverse_lazy('home_accounts')
+        return HttpResponseRedirect(url)
+
+
+class DeclineCategory(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = ('change_promotion',)
+
+    def get(self, request, pk):
+        promotion = Promotion.objects.get(pk=pk)
+        promotion.status = 'declined'
+        promotion.save()
 
         url = reverse_lazy('home_accounts')
         return HttpResponseRedirect(url)

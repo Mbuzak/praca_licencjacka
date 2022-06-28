@@ -10,9 +10,15 @@ from .forms import TournamentForm
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from ratings.models import FideRating
-from .pairing_system import create_pairing, create_round, get_fide_rating, update_results, round_count, set_participants_promotion
+from .calculate import (create_pairing, create_round,
+                        get_fide_rating,
+                        update_results,
+                        round_count,
+                        set_participants_promotion,
+                        is_match_result_valid,
+                        )
 from joinment.models import Application
-from .pypair import Swiss
+from .pairing import Swiss
 from .filters import TournamentFilter
 
 
@@ -31,41 +37,32 @@ def swiss_pairing(tournament_id):
     matches = Match.objects.filter(round__tournament_id=tournament_id)
 
     for member in members:
-        full_name = str(member.person.name + ' ' + member.person.lastname)
-        players.append({'name': full_name, 'rating': member.get_rating(), 'title': 0})  # TBD
+        # player - [member_id, polish_rating, current_score, does_already_have_break]
+        players.append([member.id, member.person.get_rating(), member.points])
 
     for i in range(1, tournament_round_count(tournament_id)):
         round_matches = matches.filter(round__round=i)
 
         for match in round_matches:
-            white_fullname = str(match.white.person.name + ' ' + match.white.person.lastname)
-            black_fullname = str(match.black.person.name + ' ' + match.black.person.lastname)
+            white = TournamentMember.objects.get(tournament_id=match.round.tournament.id, person_id=match.white.person.id)
+            black = TournamentMember.objects.get(tournament_id=match.round.tournament.id, person_id=match.black.person.id)
 
-            games.append({'player': white_fullname, 'opponent': black_fullname,
-                          'player_score': match.white_result, 'opponent_score': match.black_result,
-                          'player_color': 'W', 'opponent_color': 'B',
-                          'round': i, 'is_walkover': False})
-
-    #print(games)
+            games.append({'white': white.id, 'black': black.id, 'white_score': white.points,
+                          'black_score': black.points, 'round': i})
 
     swiss = Swiss(players, games, tournament_round_count(tournament_id))
-    swiss.make_it()
+    swiss.pairing()
 
     for i in range(len(swiss.pairs)):
-        print(swiss.pairs[i])
-        white_id = TournamentMember.objects.get(person__name=swiss.pairs[i][0]['name'].split()[0],
-                                                person__lastname=swiss.pairs[i][0]['name'].split()[1]).id
-        black_id = TournamentMember.objects.get(person__name=swiss.pairs[i][1]['name'].split()[0],
-                                                person__lastname=swiss.pairs[i][1]['name'].split()[1]).id
         Match(round_id=Round.objects.filter(tournament_id=tournament_id).latest('round').id, chessboard=i + 1,
-              white_id=white_id, black_id=black_id).save()
+              white_id=swiss.pairs[i][0], black_id=swiss.pairs[i][1]).save()
 
 
 class IndexView(ListView):
     template_name = 'tournaments/index.html'
     queryset = Tournament.objects.all().order_by('start')
     # context_object_name = 'tournaments'
-    # paginate_by = 30
+    # paginate_by = 2
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -124,7 +121,6 @@ class ProfileView(DetailView):
         rounds = [item.id for item in Round.objects.filter(tournament_id=self.kwargs['pk'])]
         context['matches'] = Match.objects.filter(Q(white_id=self.kwargs['member_id']) |
                                                   Q(black_id=self.kwargs['member_id']), round_id__in=rounds)
-        print(context['matches'])
         return context
 
 
@@ -259,6 +255,11 @@ class UpdateMatch(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('detail_round',
                             kwargs={'tournament_id': self.kwargs['tournament_id'], 'pk': self.kwargs['round_id']})
+
+    def form_valid(self, form):
+        if is_match_result_valid(form.instance.white_result, form.instance.black_result):
+            return super(UpdateMatch, self).form_valid(form)
+        return super(UpdateMatch, self).form_invalid(form)
 
 
 class PlacementView(LoginRequiredMixin, DetailView):

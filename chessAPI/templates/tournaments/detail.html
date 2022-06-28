@@ -84,9 +84,11 @@
     {% if tournament.is_started %}
         {% if not tournament.is_ended %}
             {% if tournament.round_number == last_round.round %}
-                <form method="get" action="{% url 'tournaments_end_tournament' tournament.id %}" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Zakończ turniej</button>
-                </form>
+                {% if incompleted_matches == 0 %}
+                    <form method="get" action="{% url 'tournaments_end_tournament' tournament.id %}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Zakończ turniej</button>
+                    </form>
+                {% endif %}
             {% else %}
                 {% if incompleted_matches == 0 %}
                     <form method="post" action="{% url 'create_round' tournament.id %}" style="display: inline;">

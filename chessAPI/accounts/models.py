@@ -85,7 +85,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(null=True)
     club = models.ForeignKey(Club, on_delete=models.CASCADE, blank=True, null=True, default=None,
                              related_name='accounts')
-    title = models.CharField(max_length=10, default='b/k')  #  choices=TITLE_CHOICES
+    title = models.CharField(max_length=10)  #  choices=TITLE_CHOICES
 
     objects = AccountManager()
 

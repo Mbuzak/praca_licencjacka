@@ -68,26 +68,6 @@ class DeleteClub(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return super(DeleteClub, self).delete(request, *args, **kwargs)
 
 
-"""
-class LeaveClub(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = ClubMember
-    template_name = 'clubs/update.html'
-    fields = ()
-    # initial = {'value1': 'foo', 'value2': 'bar'}
-    # fields = ('person',)
-    # fields = ('name', 'email', 'manager',)
-    success_url = reverse_lazy('home_club')
-
-    def get_success_message(self, cleaned_data):
-        return 'Klub %(name)s został opuszczony' % {'name': self.object.club.name}
-
-    #def post(self, request, **kwargs):
-    #    request.POST = request.POST.copy()
-    #    request.POST['leave'] = datetime.date.today()
-    #    return super(LeaveClub, self).post(request, **kwargs)
-"""
-
-
 class AddMemberView(LoginRequiredMixin, SuccessMessageMixin, View):
     def post(self, request, pk):
         application = Application.objects.get(pk=pk)
@@ -97,7 +77,6 @@ class AddMemberView(LoginRequiredMixin, SuccessMessageMixin, View):
 
         Application(pk=pk).delete()
 
-        # url = reverse_lazy('detail_club_application', kwargs={'pk': self.kwargs['pk']})
         url = reverse_lazy('home_club')
         return HttpResponseRedirect(url)
 

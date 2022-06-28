@@ -9,4 +9,5 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('<int:pk>/', ProfileView.as_view(), name='profile'),
     path('promotion/<int:pk>/', UpdateCategory.as_view(), name='accounts_update_category'),
+    path('decline-promotion/<int:pk>/', DeclineCategory.as_view(), name='accounts_decline_category'),
 ]

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import *
 
-
+'''
 class AddressAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Address', {'fields': ['province', 'city', 'street']})
@@ -11,3 +11,4 @@ class AddressAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Address, AddressAdmin)
+'''

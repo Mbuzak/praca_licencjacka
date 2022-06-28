@@ -23,6 +23,7 @@
                 <th>Sędzia</th>
                 <th>Tytuł do zatwierdzenia</th>
 				<th></th>
+                <th></th>
             </tr>
             {% for promotion in promotions %}
                 <tr>
@@ -36,6 +37,15 @@
                                 <i class="fa fa-plus"></i>
                             </button>
                         </form>
+                    </td>
+
+                    <td>
+                        <form method="get" action="{%url 'accounts_decline_category' promotion.id %}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
         </table>
